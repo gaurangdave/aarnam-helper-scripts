@@ -1,0 +1,11 @@
+{
+  "name": "aarnam-helper-scripts",
+  "version": "1.0.0",
+  "description": "helper scripts",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Gaurang Dave",
+  "license": "ISC"
+}
