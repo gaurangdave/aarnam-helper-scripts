@@ -1,21 +1,43 @@
 // Imports the Google Cloud client library.
 const Storage = require('@google-cloud/storage').Storage;
 const path = require('path');
-const logger = require('../aarnamLogger');
+const logger = require('../..logger');
 const fs = require('fs');
 const Q = require('q');
 
 
-// Instantiates a client. Explicitly use service account credentials by
-// specifying the private key file. All clients in google-cloud-node have this
-// helper, see https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
+let storage = null;
+const module = "GOOGLE STORAGE HELPER";
 
-// TODO Add initialize function to initialize storage object with JSON file page and project id.
-const storage = new Storage({
-     keyFilename: path.resolve(__dirname, './key/aarnamobjects-jenkins.json'),
-     projectId: 'aarnamobjects',
-});
+/**
+ * Function to instantiate a client by passing key file and project id.
+ * @param {*} params 
+ */
+const initialize = (params) => {
+     const {
+          keyFilename,
+          projectId
+     } = params;
 
+     if (!keyFilename) {
+          storage = null;
+          logger.error(`${module}: Cannot Initialize : undefined or invalid key file.`);
+          return false;
+     }
+
+     if (!projectId) {
+          storage = null;
+          logger.error(`${module}: Cannot Initialize : undefined or invalid projectId.`);
+          return false;
+     }
+
+     storage = new Storage({
+          keyFilename,
+          projectId,
+     });
+
+     return true;
+}
 /**
  * Function to get list of buckets in Google Cloud Storage.
  */
@@ -24,7 +46,7 @@ const getBucketList = () =>
      .getBuckets()
      .then(results => results[0])
      .catch(err => {
-          console.error('ERROR:', err);
+          logger.error(`${module} : Cannot Retrieve Bucket List : `, err);
      });
 
 /**
@@ -35,8 +57,9 @@ const getBucketList = () =>
 const bucketExists = bucketName =>
      new Q.Promise(async (resolve, reject) => {
           if (!bucketName) {
-               logger.error('Bucket name is required param');
-               return reject(new Error('Bucket name is required param'));
+               const errMsg = `${module}: bucketExists : bucket name is required param`;
+               logger.error(errMsg);
+               return reject(new Error(errMsg));
           }
           const bucketList = (await getBucketList()) || [];
           const requiredBucket = bucketList.find(
@@ -47,29 +70,35 @@ const bucketExists = bucketName =>
 
 /**
  * Helper function to create new bucket on google cloud cdn
- * @param {*} bucketToCreate
+ * @param {*} params
  */
 // TODO change params to JS object. 
-const createBucket = (
-          bucketToCreate,
-          isBucketPublic = false,
-          areFilesPublic = false
-     ) =>
+const createBucket = (params) =>
      new Q.Promise(async (resolve, reject) => {
+          const {
+               bucketName: bucketToCreate,
+               isBucketPublic = false,
+               areFilesPublic = false
+          } = params;
+
           if (!bucketToCreate || typeof bucketToCreate !== 'string') {
-               logger.error('Bucket name is not defined');
-               return reject(new Error('Bucket name is not defined'));
+               const errMsg = `${module}: createBucket : bucket name is required param`;
+               logger.error(errMsg);
+               return reject(new Error(errMsg));
           }
 
           const existingBucket = await bucketExists(bucketToCreate);
+
           if (existingBucket) {
-               logger.info(`${bucketToCreate} already exists!`);
+               logger.info(`${module}: createBucket : ${bucketToCreate} already exists`);
                return resolve(existingBucket);
           }
+
           const newBucket = storage.bucket(bucketToCreate);
           newBucket.create(async (err, bucket) => {
                if (err) {
-                    logger.error('Error creating new bucket', err);
+                    const errMsg = `${module}: createBucket : Cannot create new bucket`;
+                    logger.error(errMsg, err);
                     return reject(err);
                }
 
@@ -79,32 +108,35 @@ const createBucket = (
                     };
                     await bucket.makePublic(options);
                }
-               logger.success(`Created new bucket ${bucketToCreate}`);
+               logger.success(`${module}: createBucket : new bucket ${bucketToCreate} created`);
                return resolve(bucket);
           });
      });
 
 /**
  * Helper function to push objects to google cloud storage
- * @param {*} bucketToEdit
- * @param {*} fileToUpload
- * @param {*} isPublic
+ * @param {*} params
  */
-const putObject = (bucketToEdit, fileToUpload, isPublic = false) =>
+const putObject = (params) =>
      new Q.Promise((resolve, reject) => {
+          const {
+               bucketName: bucketToEdit,
+               fileToUpload,
+               isPublic = false
+          } = params;
           if (!bucketToEdit || typeof bucketToEdit !== 'string') {
-               logger.error('Invalid bucket name');
-               return reject(new Error('Invalid bucket name'));
+               const errMsg = `${module}: putObject : Invalid bucket name`;
+               logger.error(errMsg);
+               return reject(new Error(errMsg));
           }
           if (
                !fileToUpload ||
                typeof fileToUpload !== 'string' ||
                !fs.existsSync(fileToUpload)
           ) {
-               logger.error(`Invalid or non-existing file ${fileToUpload}`);
-               return reject(
-                    new Error(`Invalid or non-existing file ${fileToUpload}`)
-               );
+               const errMsg = `${module}: putObject : Invalid or non-existing file ${fileToUpload}`;
+               logger.error(errMsg);
+               return reject(new Error(errMsg));
           }
           const options = {
                public: isPublic,
@@ -118,18 +150,22 @@ const putObject = (bucketToEdit, fileToUpload, isPublic = false) =>
           fs.createReadStream(fileToUpload)
                .pipe(file.createWriteStream(options))
                .on('error', error => {
-                    logger.error('Error uploading file', error);
+                    const errMsg = `${module}: putObject : Error uploading file`;
+
+                    logger.error(errMsg, error);
                     return reject(error);
                })
                .on('finish', () => {
                     logger.success(
-                         `${fileName} successfully uploaded to bucket ${bucketToEdit}`
+                         `${module}: putObject : ${fileName} successfully uploaded to bucket ${bucketToEdit}`
                     );
                     return resolve();
                });
      });
 
+
 module.exports = {
+     initialize,
      getBucketList,
      bucketExists,
      createBucket,

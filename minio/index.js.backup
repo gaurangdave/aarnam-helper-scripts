@@ -1,0 +1,202 @@
+const Minio = require('minio');
+const Q = require('q');
+const logger = require('../logger');
+const fs = require('fs');
+const path = require('path');
+
+let minioClient = null;
+const moduleName = "MINIO STORAGE HELPER";
+/**
+ * Function to initialize minioClient using access key and secret key.
+ * @param {*} params 
+ */
+const initialize = (params) => {
+     const {
+          accessKey,
+          secretKey,
+          endPoint
+     } = params;
+
+     if (!endPoint) {
+          minioClient = null;
+          logger.error(`${moduleName}: Cannot Initialize : undefined or invalid endPoint.`);
+          return false;
+     }
+
+     if (!accessKey) {
+          minioClient = null;
+          logger.error(`${moduleName}: Cannot Initialize : undefined or invalid accessKey.`);
+          return false;
+     }
+
+     if (!secretKey) {
+          minioClient = null;
+          logger.error(`${moduleName}: Cannot Initialize : undefined or invalid secretKey.`);
+          return false;
+     }
+
+     minioClient = new Minio.Client({
+          endPoint,
+          useSSL: true,
+          accessKey,
+          secretKey,
+     });
+
+     return true;
+}
+
+/**
+ * Function to get list of current buckets in minio.
+ */
+const getBucketList = () => {
+     // return new Q.Promise((resolve, request) => {
+     //      if (!minioClient) {
+     //           const errorMessage = `${moduleName}: Not initialized!`;
+     //           logger.error(errorMessage);
+     //           reject(new Error(errorMessage));
+     //      }
+
+     //      minioClient.listBuckets((error, bucketStream) => {
+     //           if (error) {
+     //                logger.error(`${moduleName}: Error getting bucket list`, error);
+     //                reject(error);
+     //           }
+     //      });
+     // });
+
+     console.log(minioClient);
+     if (!minioClient) {
+          const errorMessage = `${moduleName}: Not initialized!`;
+          logger.error(errorMessage);
+          // reject(new Error(errorMessage));
+          return false;
+     }
+
+     return true;
+}
+
+/**
+ * Function to check if bucket exists.
+ */
+const bucketExists = () => {
+     if (!minioClient) {
+          logger.error(`${moduleName}: Not initialized!`);
+          return;
+     }
+
+     stream.on('data', (obj) => {
+          console.log(obj);
+     });
+
+     stream.on('end', () => {
+          console.log('stream ended..');
+          resolve()
+     });
+
+     stream.on('error', (err) => {
+          console.log(err);
+     });
+}
+
+/**
+ * Function to upload files to minio server.
+ * @param {*} bucket
+ * @param {*} filePath
+ * @param {*} accessKey
+ * @param {*} secretKey
+ */
+const putObject = (bucket, filePath, accessKey, secretKey) =>
+     new Q.Promise((resolve, reject) => {
+          // check if file exists
+          if (!fs.existsSync(filePath)) {
+               logger.error(`${filePath} does not exist!`);
+               reject(new Error(`${filePath} does not exist!`));
+          }
+
+          const fileStream = fs.createReadStream(filePath);
+          const fileName = path.basename(filePath);
+
+          const minioClient = new Minio.Client({
+               endPoint: 'minio.aarnamsoftwares.com',
+               useSSL: true,
+               accessKey,
+               secretKey,
+          });
+
+          fs.stat(filePath, function (err, stats) {
+               if (err) {
+                    logger.error(`Error reading ${fileName} stats`, err);
+                    return reject(err);
+               }
+
+               minioClient.putObject(
+                    bucket,
+                    fileName,
+                    fileStream,
+                    stats.size,
+                    (err, etag) => {
+                         if (err) {
+                              logger.error(
+                                   `Error uploading ${fileName} to minio server`,
+                                   err
+                              );
+                              reject(err);
+                         }
+
+                         if (etag) {
+                              logger.success(`Successfully uploaded ${filePath}`);
+                              resolve(etag);
+                         }
+                    }
+               );
+          });
+     });
+
+/**
+ * Function to create bucket if not present
+ * @param {*} bucket
+ * @param {*} accessKey
+ * @param {*} secretKey
+ */
+const createBucket = (bucket, accessKey, secretKey) =>
+     new Q.Promise((resolve, reject) => {
+          const minioClient = new Minio.Client({
+               endPoint: 'minio.aarnamsoftwares.com',
+               useSSL: true,
+               accessKey,
+               secretKey,
+          });
+
+          // check if bucket exists or not.
+          minioClient.bucketExists(bucket, (err, exists) => {
+               if (err) {
+                    logger.error('Error checking bucket status', err);
+                    reject();
+               }
+
+               if (!exists) {
+                    minioClient.makeBucket(bucket, err => {
+                         if (err) {
+                              logger.error('Error creating bucket!', err);
+                              reject();
+                         } else {
+                              logger.info(`Created new bucket ${bucket}`);
+                              resolve(true);
+                         }
+                    });
+               } else {
+                    logger.warn(
+                         `Bucket ${bucket} exists. Files will be overwritten`
+                    );
+                    resolve(true);
+               }
+          });
+     });
+
+module.exports = {
+     initialize,
+     getBucketList,
+     bucketExists,
+     createBucket,
+     putObject,
+};

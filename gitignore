@@ -1,0 +1,6 @@
+**/node_modules/
+packet-lock.json
+.DS_Store
+minio.config.json
+.vscode/
+build/

@@ -1,0 +1,16 @@
+{
+     "extends": [
+          "tslint:latest",
+          "tslint-config-prettier"
+     ],
+     "rules": {
+          "ordered-imports": false,
+          "interface-name": [true, "never-prefix"],
+          "no-implicit-dependencies": [true, "dev"],
+          "no-console": false,
+          "no-var-requires": false
+     },
+     "rulesDirectory": [
+          "node_modules/tslint-eslint-rules/dist/rules"
+     ]
+}

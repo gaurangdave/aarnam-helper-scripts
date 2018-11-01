@@ -1,0 +1,367 @@
+const minioHelperFactory = require("../../minio").initialize;
+const path = require("path");
+const testbucket = "testbucket";
+const invalidbucket = "invalidbucket";
+const helper = require("../helper");
+const Minio = require("minio");
+const {
+    accessKey,
+    secretKey,
+    endPoint
+} = process.env;
+
+const minioClient = new Minio.Client({
+    endPoint,
+    useSSL: true,
+    accessKey,
+    secretKey
+});
+
+describe("test input parameters", () => {
+    test("accessKey must be present", () => {
+        expect(process.env.accessKey).toBeDefined();
+    });
+
+    test("secretKey must be present", () => {
+        expect(process.env.secretKey).toBeDefined();
+    });
+
+    test("endPoint must be present", () => {
+        expect(process.env.endPoint).toBeDefined();
+    });
+});
+
+describe("test object initialization", () => {
+    let mh = null;
+
+    test("object should be null - missing all keys", () => {
+        mh = minioHelperFactory({});
+        expect(mh).toBeNull();
+    });
+
+    test("object should be null - missing secretKey and endPoint", () => {
+        mh = minioHelperFactory({
+            accessKey
+        });
+        expect(mh).toBeNull();
+    });
+
+    test("object should be null - missing endPoint", () => {
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey
+        });
+        expect(mh).toBeNull();
+    });
+
+    test("object should be defined", () => {
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+        expect(mh).toBeDefined();
+    });
+});
+
+describe("test exported members", () => {
+    let mh = {};
+    beforeAll(() => {
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+    });
+
+    test("should export initialize method", () => {
+        expect(mh).toBeDefined();
+    });
+
+    test("should export isInitialized method", () => {
+        expect(mh.isInitialized).toBeDefined();
+    });
+
+    test("should export getBucketList method", () => {
+        expect(mh.getBucketList).toBeDefined();
+    });
+    test("should export putObject method", () => {
+        expect(mh.putObject).toBeDefined();
+    });
+    test("should export createBucket method", () => {
+        expect(mh.createBucket).toBeDefined();
+    });
+
+    test("should export getObject method", () => {
+        expect(mh.getObject).toBeDefined();
+    });
+
+    test("should export removeBucket method", () => {
+        expect(mh.removeBucket).toBeDefined();
+    });
+
+    test("should export removeObject method", () => {
+        expect(mh.removeObject).toBeDefined();
+    });
+
+    test("should export listObjects method", () => {
+        expect(mh.listObjects).toBeDefined();
+    });
+
+    test("should export bucketExists method", () => {
+        expect(mh.bucketExists).toBeDefined();
+    });
+});
+
+describe("test getBucketList()", () => {
+    let mh = {};
+    let bucketListResponse = null;
+    beforeAll(async () => {
+
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+
+        bucketListResponse = await mh.getBucketList();
+    });
+
+    test("getBucketList() response should not be null", () => {
+        expect(bucketListResponse).toBeDefined();
+    })
+
+    test("getBucketList() response should be an object", () => {
+        expect(typeof (bucketListResponse) === "object").toBeTruthy();
+    });
+
+    test("getBucketList() response type should be success", () => {
+        expect(bucketListResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("getBucketList() response name should match", () => {
+        expect(bucketListResponse._name === "GET_BUCKET_LIST_SUCCESSFULL").toBeTruthy();
+    });
+
+    test("getBucketList() response data should be an array", () => {
+        expect(bucketListResponse._data instanceof Array).toBeTruthy();
+    });
+
+    test("getBucketList() response data should be non empty array", () => {
+        expect(bucketListResponse._data.length).toBeGreaterThan(0);
+    });
+});
+
+describe("test createBucket()", () => {
+    /**
+     * Before All
+     * 1. Get bucket name with timestamp. const newBucket
+     * 2. Use minio helper api to create bucket and save reponse
+     *      2.1 Validate response
+     * 3. Use minio client api to get bucket list
+     *      3.1 Validate the list to see if bucket exists.
+     * 
+     * 
+     * After All
+     * 1. Use minio client api to delete the bucket (newBucket)
+     *      1.1 If delete bucket fails - console log it!
+     */
+    const newBucket = `testbucket-${Date.now()}`;
+    let bucketCreateResponse = null;
+    let bucketList = [];
+    beforeAll(async (done) => {
+
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+
+        bucketCreateResponse = await mh.createBucket(newBucket);
+
+        try {
+            bucketList = await helper.listBuckets();
+            done();
+        } catch (e) {}
+
+    }, 15000);
+
+    test("createBucket() response should not be null", () => {
+        expect(bucketCreateResponse).toBeDefined();
+    })
+
+    test("createBucket() response should be an object", () => {
+        expect(typeof (bucketCreateResponse) === "object").toBeTruthy();
+    });
+
+    test("createBucket() response type should be success", () => {
+        expect(bucketCreateResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("createBucket() response name should match", () => {
+        expect(bucketCreateResponse._name === "CREATE_BUCKET_SUCCESSFULL").toBeTruthy();
+    });
+
+    test("createBucket() new bucket should be in the list", () => {
+        const createdBucket = bucketList.find((bc) => {
+            return bc.name === newBucket;
+        });
+
+        expect(createdBucket).toBeDefined();
+    });
+
+    afterAll(async (done) => {
+        await helper.deleteTestBucket(newBucket);
+        done();
+    }, 15000);
+});
+
+describe("test removeBucket()", () => {
+    /**
+     * Before All
+     * 1. Get bucket name with timestamp. const bucketToDelete
+     * 2. Using minio client to create a new bucket. 
+     * 3. Use minio helper to remove bucket and save response.
+     *      3.1. Validate reponse
+     * 4. Use minio client to get bucket list.
+     *      4.1 Validate deleted bucket form the list.
+     * 
+     * 
+     * After All
+     * 
+     */
+    const newBucket = `testbucket-${Date.now()}`;
+    let bucketDeleteResponse = null;
+    let bucketList = [];
+    beforeAll(async (done) => {
+
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+
+        try {
+            const makeBucketResponse = await helper.createTestBucket(newBucket);
+            bucketDeleteResponse = await mh.removeBucket(newBucket);
+            bucketList = await helper.listBuckets();
+            done()
+        } catch (e) {
+            console.error('Error creating test bucket', e);
+            done();
+        }
+    }, 15000);
+
+    test("removeBucket() response should not be null", () => {
+        expect(bucketDeleteResponse).toBeDefined();
+    })
+
+    test("removeBucket() response should be an object", () => {
+        expect(typeof (bucketDeleteResponse) === "object").toBeTruthy();
+    });
+
+    test("removeBucket() response type should be success", () => {
+        expect(bucketDeleteResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("removeBucket() response name should match", () => {
+        expect(bucketDeleteResponse._name === "REMOVE_BUCKET_SUCCESSFULL").toBeTruthy();
+    });
+
+    afterAll(async (done) => {
+        // Calling delete in case the test fails. 
+        await helper.deleteTestBucket(newBucket);
+        done();
+    }, 15000);
+});
+
+describe("test putObject()", () => {
+    /**
+     * Before all
+     * 1. Get bucket name with timestamp. const bucketToDelete
+     * 2. Using minio client to create a new bucket. 
+     * 3. Use minio helper to but test object in new bucket.
+     *      3.1 validate response
+     * 4. Use minio client to get object list
+     *      4.1 validate list
+     * 
+     * After All
+     * 1. Remove test bucket using minio client.
+     */
+    const newBucket = `testbucket-${Date.now()}`;
+    let putObjectResponse = null;
+    let bucketList = [];
+    const objectPath = path.resolve(__dirname, '../data/test_file.json');
+    beforeAll(async (done) => {
+
+        mh = minioHelperFactory({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+
+        try {
+            const makeBucketResponse = await helper.createTestBucket(newBucket);
+            putObjectResponse = await mh.putObject(newBucket, objectPath);
+            done();
+        } catch (e) {
+            console.error('Error creating test bucket', e);
+            done();
+        }
+
+    }, 15000);
+
+    test("putObject() response should not be null", () => {
+        expect(putObjectResponse).toBeDefined();
+    })
+
+    test("putObject() response should be an object", () => {
+        expect(typeof (putObjectResponse) === "object").toBeTruthy();
+    });
+
+    test("putObject() response type should be success", () => {
+        expect(putObjectResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("putObject() response name should match", () => {
+        expect(putObjectResponse._name === "FILE_UPLOAD_SUCCESSFULL").toBeTruthy();
+    });
+
+    afterAll(async (done) => {
+        await helper.deleteTestData(newBucket);
+        await helper.deleteTestBucket(newBucket);
+        done();
+    }, 15000);
+});
+
+describe("test listObjects()", () => {
+    /**
+     *   beforeAll()
+     *   1. Create test bucket using minioClient
+     *   2. Add testObject using minioClient
+     *   3. Call helper method to list objects
+     *
+     *   1. Verify the reponse. 
+     * 
+     *   afterAll()
+     *   1. Delete objects.
+     *   2. Delete test bucket.
+     */
+
+    beforeAll(() => {}, 15000);
+});
+
+describe("test removeObject()", () => {
+    /**
+     *   beforeAll()
+     *   1. Create test bucket using minioClient
+     *   2. Add testObject using minioClient
+     *   3. Call helper method to removeObject
+     *
+     *   1. Verify the reponse. 
+     * 
+     *   afterAll()
+     *   2. Delete test bucket.
+     *   
+     */
+});
