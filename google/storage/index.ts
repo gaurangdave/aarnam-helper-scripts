@@ -1,7 +1,7 @@
 import { GoogleStorageHelper } from "./GoogleStorageHelper";
 
 // Imports the Google Cloud client library.
-const logger = require("../..logger");
+const logger = require("../../logger");
 const moduleName = "GoogleStorageHelper";
 
 /**

@@ -1,23 +1,26 @@
 const minioHelperFactory = require("../../minio").initialize;
 const path = require("path");
 const helper = require("../helper/minio");
+const fs = require("fs");
+const secretData = fs.readFileSync(`${process.env.secretPath}/minio.json`);
+
 const {
     accessKey,
     secretKey,
     endPoint
-} = process.env;
+} = JSON.parse(secretData);
 
 describe("test input parameters", () => {
     test("accessKey must be present", () => {
-        expect(process.env.accessKey).toBeDefined();
+        expect(accessKey).toBeDefined();
     });
 
     test("secretKey must be present", () => {
-        expect(process.env.secretKey).toBeDefined();
+        expect(secretKey).toBeDefined();
     });
 
     test("endPoint must be present", () => {
-        expect(process.env.endPoint).toBeDefined();
+        expect(endPoint).toBeDefined();
     });
 });
 
@@ -174,7 +177,10 @@ describe("test createBucket()", () => {
         try {
             bucketList = await helper.listBuckets();
             done();
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error getting bucket list.', e);
+            done();
+        }
 
     }, 15000);
 
@@ -203,8 +209,14 @@ describe("test createBucket()", () => {
     });
 
     afterAll(async (done) => {
-        await helper.deleteTestBucket(bucketName);
-        done();
+        try {
+            await helper.deleteTestBucket(bucketName);
+            done();
+        } catch (error) {
+            console.error('Error deleting test data!');
+            done();
+        }
+
     }, 15000);
 });
 
@@ -263,9 +275,14 @@ describe("test removeBucket()", () => {
     });
 
     afterAll(async (done) => {
-        // Calling delete in case the test fails. 
-        await helper.deleteTestBucket(bucketName);
-        done();
+        try {
+            await helper.deleteTestBucket(bucketName);
+            done();
+        } catch (error) {
+            console.error('Error deleting test data!');
+            done();
+        }
+
     }, 15000);
 });
 
@@ -284,7 +301,6 @@ describe("test putObject()", () => {
      */
     const bucketName = `testbucket-${Date.now()}`;
     let putObjectResponse = null;
-    let bucketList = [];
     const filePath = path.resolve(__dirname, '../data/test_file.json');
     beforeAll(async (done) => {
 
@@ -301,7 +317,6 @@ describe("test putObject()", () => {
                 filePath
             });
 
-            bucketList = await helper.listBuckets();
             done();
         } catch (e) {
             console.error('Error creating test bucket', e);
@@ -326,14 +341,17 @@ describe("test putObject()", () => {
         expect(putObjectResponse._name === "FILE_UPLOAD_SUCCESSFULL").toBeTruthy();
     });
 
-    test("putObject() bucket should be present", () => {
-        expect(bucketList.indexOf(bucketName)).toBeGreaterThanOrEqual(0);
-    });
 
     afterAll(async (done) => {
-        await helper.deleteTestData(bucketName);
-        await helper.deleteTestBucket(bucketName);
-        done();
+        try {
+            await helper.deleteTestData(bucketName);
+            await helper.deleteTestBucket(bucketName);
+            done();
+        } catch (error) {
+            console.error('Error deleting test data');
+            done();
+        }
+
     }, 15000);
 });
 
