@@ -2,7 +2,8 @@ const googleHeplerFactory = require("../../../google/storage").initialize;
 const fs = require('fs');
 const path = require('path');
 const keyFilePath = `${process.env.secretPath}/google.aarnamobjects.json`;
-const projectId = 'aarnamobjects';
+const keyFileData = fs.readFileSync(keyFilePath);
+const projectId = JSON.parse(keyFileData).project_id;
 const helper = require("../../helper/google");
 
 

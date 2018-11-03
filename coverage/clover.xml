@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1541284350692" clover="3.2.0">
-  <project timestamp="1541284350692" name="All files">
+<coverage generated="1541284757123" clover="3.2.0">
+  <project timestamp="1541284757124" name="All files">
     <metrics statements="441" coveredstatements="283" conditionals="117" coveredconditionals="59" methods="117" coveredmethods="85" elements="675" coveredelements="427" complexity="0" loc="441" ncloc="441" packages="7" files="10" classes="10">
       <package name="google.storage">
         <metrics statements="130" coveredstatements="82" conditionals="31" coveredconditionals="20" methods="32" coveredmethods="23"/>
