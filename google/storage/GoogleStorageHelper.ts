@@ -7,8 +7,9 @@ const logger = require("../../logger");
 const fs = require("fs");
 const Q = require("q");
 
-const responseCodes = require("../constants/google.json");
-const isValidString = require("../validators/string.validator").isValidString;
+const responseCodes = require("../../constants/google.json");
+const isValidString = require("../../validators/string.validator")
+    .isValidString;
 
 export class GoogleStorageHelper {
     private _storage: Storage;
@@ -36,18 +37,23 @@ export class GoogleStorageHelper {
                 areFilesPublic = false
             } = params;
 
-            if (isValidString(bucketName)) {
+            if (!isValidString(bucketName)) {
                 const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
                 logger.error(
-                    `${this._className}.removeBucket: ${errorResponse.name}`
+                    `${this._className}.createBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
             }
 
-            const existingBucket = await this.bucketExists(bucketName);
+            let existingBucket = false;
+            try {
+                existingBucket = (await this.bucketExists({ bucketName })).data;
+            } catch (bucketExistsError) {
+                return reject(bucketExistsError);
+            }
 
             if (existingBucket) {
                 const successResponse = ServiceResponse.createWarningResponse(
@@ -241,7 +247,7 @@ export class GoogleStorageHelper {
      * @returns {Promise<boolean>}
      * @memberof GoogleStorageHelper
      */
-    public bucketExists(params: any): Promise<boolean> {
+    public bucketExists(params: any): Promise<ServiceResponse> {
         return new Q.Promise(async (resolve: Function, reject: Function) => {
             const { bucketName } = params;
             if (!isValidString(bucketName)) {
@@ -291,12 +297,6 @@ export class GoogleStorageHelper {
         });
     }
 
-    public listObjects(params: any): Promise<ServiceResponse> {
-        return new Promise((resolve: Function, reject: Function) => {
-            const { bucketName } = params;
-        });
-    }
-
     /**
      *
      * @param {*} params
@@ -305,21 +305,21 @@ export class GoogleStorageHelper {
      */
     public putObject(params: any): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
-            const { bucketName, fileToUpload, isPublic = false } = params;
+            const { bucketName, filePath, isPublic = false } = params;
 
-            if (!isValidString(bucketName) || !isValidString(fileToUpload)) {
+            if (!isValidString(bucketName) || !isValidString(filePath)) {
                 const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
                 logger.error(
-                    `${this._className}.removeBucket: ${errorResponse.name}`
+                    `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
             }
 
             // check if file exists
-            if (!fs.existsSync(fileToUpload)) {
+            if (!fs.existsSync(filePath)) {
                 const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.FILE_DOES_NOT_EXIST,
                     responseCodes.ERRORS.FILE_DOES_NOT_EXIST
@@ -337,10 +337,10 @@ export class GoogleStorageHelper {
                 contentType: "auto"
             };
 
-            const fileName = path.basename(fileToUpload);
+            const fileName = path.basename(filePath);
             const bucket = this._storage.bucket(bucketName);
             const file = bucket.file(fileName);
-            fs.createReadStream(fileToUpload)
+            fs.createReadStream(filePath)
                 .pipe(file.createWriteStream(options))
                 .on("error", (error: Error) => {
                     const errorResponse = ServiceResponse.createErrorResponse(
@@ -364,6 +364,12 @@ export class GoogleStorageHelper {
                     );
                     return resolve(successResponse);
                 });
+        });
+    }
+
+    public listObjects(params: any): Promise<ServiceResponse> {
+        return new Promise((resolve: Function, reject: Function) => {
+            const { bucketName } = params;
         });
     }
 

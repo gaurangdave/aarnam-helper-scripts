@@ -1,12 +1,17 @@
 const Minio = require("minio");
+const Q = require("q");
+const fs = require("fs");
+const path = require("path");
+
+
+const secretData = fs.readFileSync(`${process.env.secretPath}/minio.json`);
+
 const {
      accessKey,
      secretKey,
      endPoint
-} = process.env;
-const Q = require("q");
-const fs = require("fs");
-const path = require("path");
+} = JSON.parse(secretData);
+
 const minioClient = new Minio.Client({
      endPoint,
      useSSL: true,

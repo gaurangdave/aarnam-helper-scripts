@@ -32,8 +32,7 @@ export declare class GoogleStorageHelper {
      * @returns {Promise<boolean>}
      * @memberof GoogleStorageHelper
      */
-    bucketExists(params: any): Promise<boolean>;
-    listObjects(params: any): Promise<ServiceResponse>;
+    bucketExists(params: any): Promise<ServiceResponse>;
     /**
      *
      * @param {*} params
@@ -41,6 +40,7 @@ export declare class GoogleStorageHelper {
      * @memberof GoogleStorageHelper
      */
     putObject(params: any): Promise<ServiceResponse>;
+    listObjects(params: any): Promise<ServiceResponse>;
     getObject(params: any): Promise<ServiceResponse>;
     removeObject(params: any): Promise<ServiceResponse>;
 }
