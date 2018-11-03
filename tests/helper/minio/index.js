@@ -5,8 +5,8 @@ const {
      endPoint
 } = process.env;
 const Q = require("q");
-
-
+const fs = require("fs");
+const path = require("path");
 const minioClient = new Minio.Client({
      endPoint,
      useSSL: true,
@@ -22,7 +22,25 @@ const createTestBucket = async (bucketName) => {
      }
 };
 
-const uploadTestData = (bucketName) => {};
+const uploadTestData = (bucketName, filePath) => {
+     return new Q.Promise((resolve, reject) => {
+          var fileStream = fs.createReadStream(filePath)
+          const fileName = path.basename(filePath);
+
+          fs.stat(filePath, function (err, stats) {
+               if (err) {
+                    return reject(err)
+               }
+               minioClient.putObject(bucketName, fileName, fileStream, stats.size, function (err, etag) {
+                    if (err) {
+                         return reject(err);
+                    }
+
+                    return resolve(etag);
+               })
+          })
+     });
+};
 
 const deleteTestData = async (bucketName) => {
      try {
@@ -50,10 +68,14 @@ const listBuckets = () => {
                     console.error("Error getting bucket list", error);
                     return reject();
                }
+               buckets = buckets.map((bckt) => {
+                    return bckt.name
+               });
                return resolve(buckets);
           });
      });
 }
+
 
 module.exports = {
      createTestBucket,

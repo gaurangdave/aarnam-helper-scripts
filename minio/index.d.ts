@@ -1,8 +1,11 @@
-declare const MinioHelper: any;
-declare const logger: any;
-declare const moduleName = "MinioHelper";
+import { MinioHelper } from "./MinioHelper";
 /**
  *
  * @param params
  */
-declare const initialize: (params?: any) => any;
+export declare const initialize: (params: InitializationParams) => MinioHelper | null;
+export declare type InitializationParams = {
+    endPoint: string;
+    accessKey: string;
+    secretKey: string;
+};

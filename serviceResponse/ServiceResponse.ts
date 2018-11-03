@@ -1,5 +1,5 @@
 const serviceResponseTypes = require("../constants/service_response.json");
-class ServiceResponse {
+export class ServiceResponse {
     private _type: string;
     private _name: string;
     private _message: string;
@@ -120,4 +120,4 @@ class ServiceResponse {
     }
 }
 
-module.exports = ServiceResponse;
+// module.exports = ServiceResponse;

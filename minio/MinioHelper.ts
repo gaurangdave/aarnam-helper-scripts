@@ -1,18 +1,18 @@
-import { Client, BucketItemFromList, BucketItem } from "minio";
+import { Client, BucketItemFromList, BucketItem, ResultCallback } from "minio";
 import { Stats } from "fs";
 import { Stream } from "stream";
+import { ServiceResponse } from "../serviceResponse/ServiceResponse";
 const Minio = require("minio");
 const Q = require("q");
 const fs = require("fs");
 const path = require("path");
 const logger = require("../logger");
-const ServerResponse = require("../serviceResponse/ServiceResponse");
 const responseCodes = require("../constants/minio.json");
 const isValidString = require("../validators/string.validator").isValidString;
 const isValidNonEmptyArray = require("../validators/array.validator")
     .isValidNonEmptyArray;
 
-class MinioHelper {
+export class MinioHelper {
     private _isInitialized: boolean = false;
     private _className = "MinioHelper";
     private _minioClient: Client;
@@ -47,14 +47,104 @@ class MinioHelper {
 
     /**
      *
-     * Function to get list of buckets in Minio
-     * @returns {Promise<any>}
+     * @param {BucketNameParams} params
+     * @returns {Promise<ServiceResponse>}
+     * @memberof MinioHelper
+     */
+    public createBucket(params: BucketNameParams): Promise<ServiceResponse> {
+        return new Q.Promise((resolve: Function, reject: Function) => {
+            const { bucketName } = params;
+            if (!isValidString(bucketName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING
+                );
+                logger.error(
+                    `${this._className}.removeBucket: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            // check if bucket exists or not.
+            this._minioClient.bucketExists(
+                bucketName,
+                (bucketExistsError: Error | null, exists: Boolean) => {
+                    if (bucketExistsError) {
+                        const errorResponse = ServiceResponse.createErrorResponse(
+                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
+                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
+                            bucketExistsError
+                        );
+                        logger.error(
+                            `${this._className}.createBucket: ${
+                                errorResponse.name
+                            }`
+                        );
+                        return reject(errorResponse);
+                    }
+
+                    if (!exists) {
+                        this._minioClient.makeBucket(
+                            bucketName,
+                            "",
+                            (makeBucketError: any) => {
+                                if (makeBucketError) {
+                                    const errorResponse = ServiceResponse.createErrorResponse(
+                                        responseCodes.ERRORS
+                                            .ERROR_CREATING_BUCKET,
+                                        responseCodes.ERRORS
+                                            .ERROR_CREATING_BUCKET,
+                                        makeBucketError
+                                    );
+                                    logger.error(
+                                        `${this._className}.createBucket: ${
+                                            errorResponse.name
+                                        }`
+                                    );
+                                    return reject(errorResponse);
+                                } else {
+                                    const successResponse = ServiceResponse.createSuccessResponse(
+                                        responseCodes.INFO
+                                            .CREATE_BUCKET_SUCCESSFULL,
+                                        responseCodes.INFO
+                                            .CREATE_BUCKET_SUCCESSFULL
+                                    );
+                                    logger.success(
+                                        `${this._className}.createBucket: ${
+                                            successResponse.name
+                                        }`
+                                    );
+                                    return resolve(successResponse);
+                                }
+                            }
+                        );
+                    } else {
+                        const successResponse = ServiceResponse.createWarningResponse(
+                            responseCodes.INFO.BUCKET_EXISTS,
+                            responseCodes.INFO.BUCKET_EXISTS
+                        );
+                        logger.success(
+                            `${this._className}.createBucket: ${
+                                successResponse.name
+                            }`
+                        );
+                        return resolve(successResponse);
+                    }
+                }
+            );
+        });
+    }
+
+    /**
+     *
+     *
+     * @returns {Promise<ServiceResponse>}
      * @memberof MinioHelper
      */
     public getBucketList(): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
             if (!this.isInitialized()) {
-                const errorResponse = ServerResponse.createErrorResponse(
+                const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.MINIO_CLIENT_NOT_INITIALIZED
                 );
                 logger.error(
@@ -65,7 +155,7 @@ class MinioHelper {
 
             this._minioClient.listBuckets().then(
                 (data: BucketItemFromList[]) => {
-                    const successResponse = ServerResponse.createSuccessResponse(
+                    const successResponse = ServiceResponse.createSuccessResponse(
                         responseCodes.INFO.GET_BUCKET_LIST_SUCCESSFULL,
                         responseCodes.INFO.GET_BUCKET_LIST_SUCCESSFULL,
                         data
@@ -78,7 +168,7 @@ class MinioHelper {
                     return resolve(successResponse);
                 },
                 (error: Error) => {
-                    const errorResponse = ServerResponse.createErrorResponse(
+                    const errorResponse = ServiceResponse.createErrorResponse(
                         responseCodes.ERRORS.ERROR_GETTING_BUCKET_LIST,
                         responseCodes.ERRORS.ERROR_GETTING_BUCKET_LIST,
                         error
@@ -97,188 +187,16 @@ class MinioHelper {
 
     /**
      *
-     * Function to put an obect to the bucket.
-     * @param {string} bucket
-     * @param {string} filePath
-     * @returns {Promise<any>}
+     * @param {BucketNameParams} params
+     * @returns {Promise<ServiceResponse>}
      * @memberof MinioHelper
      */
-    public putObject(bucket: string, filePath: string): Promise<any> {
-        return new Q.Promise((resolve: Function, reject: Function) => {
-            // check if file exists
-
-            if (!fs.existsSync(filePath)) {
-                const errorResponse = ServerResponse.createErrorResponse(
-                    responseCodes.ERRORS.FILE_DOES_NOT_EXIST,
-                    responseCodes.ERRORS.FILE_DOES_NOT_EXIST
-                );
-
-                logger.error(
-                    `${this._className}.putObject: ${errorResponse.name}`
-                );
-                return reject(errorResponse);
-            }
-
-            const fileStream = fs.createReadStream(filePath);
-            const fileName = path.basename(filePath);
-
-            fs.stat(filePath, (err: Error, stats: Stats) => {
-                if (err) {
-                    const errorResponse = ServerResponse.createErrorResponse(
-                        responseCodes.ERRORS.ERROR_READING_FILE,
-                        responseCodes.ERRORS.ERROR_READING_FILE,
-                        err
-                    );
-
-                    logger.error(
-                        `${this._className}.putObject: ${errorResponse.name}`
-                    );
-                    return reject(errorResponse);
-                }
-
-                this._minioClient.putObject(
-                    bucket,
-                    fileName,
-                    fileStream,
-                    stats.size,
-                    (err, etag) => {
-                        if (err) {
-                            const errorResponse = ServerResponse.createErrorResponse(
-                                responseCodes.ERRORS.ERROR_UPLOADING_FILE,
-                                responseCodes.ERRORS.ERROR_UPLOADING_FILE,
-                                err
-                            );
-
-                            logger.error(
-                                `${this._className}.putObject: ${
-                                    errorResponse.name
-                                }`
-                            );
-                            return reject(errorResponse);
-                        }
-
-                        if (etag) {
-                            const successResponse = ServerResponse.createSuccessResponse(
-                                responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
-                                responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
-                                etag
-                            );
-                            logger.success(
-                                `${this._className}.putObject: ${
-                                    successResponse.name
-                                }`
-                            );
-                            return resolve(successResponse);
-                        }
-                    }
-                );
-            });
-        });
-    }
-
-    /**
-     *
-     * Function to create a bucket if not existing
-     * @param {string} bucket
-     * @returns {Promise<boolean>}
-     * @memberof MinioHelper
-     */
-    public createBucket(bucket: string): Promise<boolean> {
-        return new Q.Promise((resolve: Function, reject: Function) => {
-            // TODO validate bucket param
-            // check if bucket exists or not.
-            this._minioClient.bucketExists(
-                bucket,
-                (bucketExistsError: Error | null, exists: Boolean) => {
-                    if (bucketExistsError) {
-                        const errorResponse = ServerResponse.createErrorResponse(
-                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
-                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
-                            bucketExistsError
-                        );
-                        logger.error(
-                            `${this._className}.createBucket: ${
-                                errorResponse.name
-                            }`
-                        );
-                        return reject(errorResponse);
-                    }
-
-                    if (!exists) {
-                        this._minioClient.makeBucket(
-                            bucket,
-                            "",
-                            (makeBucketError: any) => {
-                                if (makeBucketError) {
-                                    const errorResponse = ServerResponse.createErrorResponse(
-                                        responseCodes.ERRORS
-                                            .ERROR_CREATING_BUCKET,
-                                        responseCodes.ERRORS
-                                            .ERROR_CREATING_BUCKET,
-                                        makeBucketError
-                                    );
-                                    logger.error(
-                                        `${this._className}.createBucket: ${
-                                            errorResponse.name
-                                        }`
-                                    );
-                                    return reject(errorResponse);
-                                } else {
-                                    const successResponse = ServerResponse.createSuccessResponse(
-                                        responseCodes.INFO
-                                            .CREATE_BUCKET_SUCCESSFULL,
-                                        responseCodes.INFO
-                                            .CREATE_BUCKET_SUCCESSFULL
-                                    );
-                                    logger.success(
-                                        `${this._className}.createBucket: ${
-                                            successResponse.name
-                                        }`
-                                    );
-                                    return resolve(successResponse);
-                                }
-                            }
-                        );
-                    } else {
-                        const successResponse = ServerResponse.createWarningResponse(
-                            responseCodes.INFO.BUCKET_EXISTS,
-                            responseCodes.INFO.BUCKET_EXISTS
-                        );
-                        logger.success(
-                            `${this._className}.createBucket: ${
-                                successResponse.name
-                            }`
-                        );
-                        return resolve(successResponse);
-                    }
-                }
-            );
-        });
-    }
-
-    /**
-     *
-     * Function to get object from buckets
-     * @param {string} bucket
-     * @param {string} fileName
-     * @returns {Promise<any>}
-     * @memberof MinioHelper
-     */
-    public getObject(bucket: string, fileName: string): Promise<any> {
-        return new Q.Promise((resolve: Function, reject: Function) => {});
-    }
-
-    /**
-     *
-     * Function to delete bucket
-     * @param {string} bucket
-     * @returns {Promise<any>}
-     * @memberof MinioHelper
-     */
-    public removeBucket(bucket: string): Promise<any> {
+    public removeBucket(params: BucketNameParams): Promise<ServiceResponse> {
         return new Q.Promise(async (resolve: Function, reject: Function) => {
-            if (!isValidString(bucket)) {
-                const errorResponse = ServerResponse.createErrorResponse(
+            const { bucketName } = params;
+
+            if (!isValidString(bucketName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
@@ -289,16 +207,16 @@ class MinioHelper {
             }
 
             try {
-                await this.emptyBucket(bucket);
+                await this.emptyBucket({ bucketName });
             } catch (emptyBucketError) {
                 return reject(emptyBucketError);
             }
 
             this._minioClient.removeBucket(
-                bucket,
+                bucketName,
                 (bucketRemoveError: Error | null) => {
                     if (bucketRemoveError) {
-                        const errorResponse = ServerResponse.createErrorResponse(
+                        const errorResponse = ServiceResponse.createErrorResponse(
                             responseCodes.ERRORS.ERROR_REMOVING_BUCKET,
                             responseCodes.ERRORS.ERROR_REMOVING_BUCKET,
                             bucketRemoveError
@@ -311,7 +229,7 @@ class MinioHelper {
                         return reject(errorResponse);
                     }
                     // TODO resolve with success.
-                    const successResponse = ServerResponse.createSuccessResponse(
+                    const successResponse = ServiceResponse.createSuccessResponse(
                         responseCodes.INFO.REMOVE_BUCKET_SUCCESSFULL,
                         responseCodes.INFO.REMOVE_BUCKET_SUCCESSFULL
                     );
@@ -328,27 +246,16 @@ class MinioHelper {
 
     /**
      *
-     * Function to remove object from bucket.
-     * @param {string} bucket
-     * @param {string} fileName
-     * @returns {Promise<any>}
+     * @param {BucketNameParams} params
+     * @returns {Promise<ServiceResponse>}
      * @memberof MinioHelper
      */
-    public removeObject(bucket: string, fileName: string): Promise<any> {
-        return new Q.Promise((resolve: Function, reject: Function) => {});
-    }
-
-    /**
-     *
-     * Function to empty a given bucket.
-     * @param {string} bucket
-     * @returns {Promise<any>}
-     * @memberof MinioHelper
-     */
-    public emptyBucket(bucket: string): Promise<any> {
+    public emptyBucket(params: BucketNameParams): Promise<ServiceResponse> {
         return new Q.Promise(async (resolve: Function, reject: Function) => {
-            if (!isValidString(bucket)) {
-                const errorResponse = ServerResponse.createErrorResponse(
+            const { bucketName } = params;
+
+            if (!isValidString(bucketName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
@@ -357,13 +264,13 @@ class MinioHelper {
                 );
                 return reject(errorResponse);
             }
-            this.listObjects(bucket).then(
+            this.listObjects({ bucketName }).then(
                 (resp: ServiceResponse) => {
                     const { data: bucketObjects } = resp;
 
                     if (!isValidNonEmptyArray(bucketObjects)) {
                         //resolve to bucket empty status.
-                        const successResponse = ServerResponse.createSuccessResponse(
+                        const successResponse = ServiceResponse.createSuccessResponse(
                             responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL,
                             responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL
                         );
@@ -382,11 +289,11 @@ class MinioHelper {
                     });
 
                     this._minioClient.removeObjects(
-                        bucket,
+                        bucketName,
                         objectNames,
                         (removeObjectError: Error | null) => {
                             if (removeObjectError) {
-                                const errorResponse = ServerResponse.createErrorResponse(
+                                const errorResponse = ServiceResponse.createErrorResponse(
                                     responseCodes.ERRORS
                                         .ERROR_REMOVING_MULTIPLE_OBJECTS,
                                     responseCodes.ERRORS
@@ -404,7 +311,7 @@ class MinioHelper {
                                 return reject(errorResponse);
                             }
 
-                            const successResponse = ServerResponse.createSuccessResponse(
+                            const successResponse = ServiceResponse.createSuccessResponse(
                                 responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL,
                                 responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL
                             );
@@ -428,15 +335,16 @@ class MinioHelper {
 
     /**
      *
-     * Function to list all the objects in a bucket.
-     * @param {string} bucket
-     * @returns {Promise<any>}
+     * @param {BucketNameParams} params
+     * @returns {Promise<ServiceResponse>}
      * @memberof MinioHelper
      */
-    public listObjects(bucket: string): Promise<any> {
+    public listObjects(params: BucketNameParams): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
-            if (!isValidString(bucket)) {
-                const errorResponse = ServerResponse.createErrorResponse(
+            const { bucketName } = params;
+
+            if (!isValidString(bucketName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
@@ -447,7 +355,7 @@ class MinioHelper {
             }
             const objectList: BucketItem[] = [];
             var stream: Stream = this._minioClient.listObjects(
-                bucket,
+                bucketName,
                 "",
                 true
             );
@@ -465,10 +373,13 @@ class MinioHelper {
             });
 
             stream.on("end", () => {
-                const successResponse = ServerResponse.createSuccessResponse(
+                const successResponse = ServiceResponse.createSuccessResponse(
                     responseCodes.INFO.GET_OBJECT_LIST_SUCCESSFULL,
                     responseCodes.INFO.GET_OBJECT_LIST_SUCCESSFULL,
                     objectList
+                );
+                logger.success(
+                    `${this._className}.listObjects: ${successResponse.name}`
                 );
                 return resolve(successResponse);
             });
@@ -477,14 +388,244 @@ class MinioHelper {
 
     /**
      *
-     * Function to check if bucket exists or not.
-     * @param {string} bucket
-     * @returns {Promise<any>}
+     * @param {PutObjectParams} params
+     * @returns {Promise<ServiceResponse>}
      * @memberof MinioHelper
      */
-    public bucketExists(bucket: string): Promise<any> {
+    public putObject(params: PutObjectParams): Promise<ServiceResponse> {
+        return new Q.Promise((resolve: Function, reject: Function) => {
+            const { bucketName, filePath } = params;
+
+            if (!isValidString(bucketName) || !isValidString(filePath)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING
+                );
+                logger.error(
+                    `${this._className}.removeBucket: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            // check if file exists
+            if (!fs.existsSync(filePath)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.FILE_DOES_NOT_EXIST,
+                    responseCodes.ERRORS.FILE_DOES_NOT_EXIST
+                );
+
+                logger.error(
+                    `${this._className}.putObject: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            const fileStream = fs.createReadStream(filePath);
+            const fileName = path.basename(filePath);
+
+            fs.stat(filePath, (err: Error, stats: Stats) => {
+                if (err) {
+                    const errorResponse = ServiceResponse.createErrorResponse(
+                        responseCodes.ERRORS.ERROR_READING_FILE,
+                        responseCodes.ERRORS.ERROR_READING_FILE,
+                        err
+                    );
+
+                    logger.error(
+                        `${this._className}.putObject: ${errorResponse.name}`
+                    );
+                    return reject(errorResponse);
+                }
+
+                this._minioClient.putObject(
+                    bucketName,
+                    fileName,
+                    fileStream,
+                    stats.size,
+                    (err, etag) => {
+                        if (err) {
+                            const errorResponse = ServiceResponse.createErrorResponse(
+                                responseCodes.ERRORS.ERROR_UPLOADING_FILE,
+                                responseCodes.ERRORS.ERROR_UPLOADING_FILE,
+                                err
+                            );
+
+                            logger.error(
+                                `${this._className}.putObject: ${
+                                    errorResponse.name
+                                }`
+                            );
+                            return reject(errorResponse);
+                        }
+
+                        if (etag) {
+                            const successResponse = ServiceResponse.createSuccessResponse(
+                                responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
+                                responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
+                                etag
+                            );
+                            logger.success(
+                                `${this._className}.putObject: ${
+                                    successResponse.name
+                                }`
+                            );
+                            return resolve(successResponse);
+                        }
+                    }
+                );
+            });
+        });
+    }
+
+    /**
+     *
+     * @param {FileNameParams} params
+     * @returns {Promise<ServiceResponse>}
+     * @memberof MinioHelper
+     */
+    public getObject(params: FileNameParams): Promise<ServiceResponse> {
+        return new Q.Promise((resolve: Function, reject: Function) => {
+            const { bucketName, fileName } = params;
+
+            if (!isValidString(bucketName) || !isValidString(fileName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING
+                );
+                logger.error(
+                    `${this._className}.getObject: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            this._minioClient.getObject(
+                bucketName,
+                fileName,
+                (error: Error | null, dataStream: any) => {
+                    if (error) {
+                        const errorResponse = ServiceResponse.createErrorResponse(
+                            responseCodes.ERRORS.ERROR_GETTING_OBJECT,
+                            responseCodes.ERRORS.ERROR_GETTING_OBJECT,
+                            error
+                        );
+                        logger.error(
+                            `${this._className}.getObject: ${
+                                errorResponse.name
+                            }`
+                        );
+                        return reject(errorResponse);
+                    }
+                    let fileData = "";
+                    dataStream.setEncoding("utf8");
+
+                    dataStream.on("data", (chunk: string) => {
+                        fileData += chunk;
+                    });
+
+                    dataStream.on("end", () => {
+                        const successResponse = ServiceResponse.createSuccessResponse(
+                            responseCodes.INFO.GET_OBJECT_SUCCESSFULL,
+                            responseCodes.INFO.GET_OBJECT_SUCCESSFULL,
+                            fileData
+                        );
+
+                        logger.success(
+                            `${this._className}.getObject: ${
+                                successResponse.name
+                            }`
+                        );
+                        return resolve(successResponse);
+                    });
+
+                    dataStream.on("error", (err: Error) => {
+                        return reject(err);
+                    });
+                }
+            );
+        });
+    }
+
+    /**
+     *
+     * @param {FileNameParams} params
+     * @returns {Promise<ServiceResponse>}
+     * @memberof MinioHelper
+     */
+    public removeObject(params: FileNameParams): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {});
+    }
+
+    /**
+     *
+     * @param {BucketNameParams} params
+     * @returns {Promise<ServiceResponse>}
+     * @memberof MinioHelper
+     */
+    public bucketExists(params: BucketNameParams): Promise<ServiceResponse> {
+        return new Q.Promise((resolve: Function, reject: Function) => {
+            const { bucketName } = params;
+
+            if (!isValidString(bucketName)) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING
+                );
+                logger.error(
+                    `${this._className}.bucketExists: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            this._minioClient.bucketExists(
+                bucketName,
+                (error: Error | null, exists: Boolean) => {
+                    if (error) {
+                        const errorResponse = ServiceResponse.createErrorResponse(
+                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
+                            responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
+                            error
+                        );
+                        logger.error(
+                            `${this._className}.bucketExists: ${
+                                errorResponse.name
+                            }`
+                        );
+                        return reject(errorResponse);
+                    }
+
+                    const successResponse = ServiceResponse.createSuccessResponse(
+                        responseCodes.INFO.CHECKING_BUCKET_STATUS_SUCCESSFULL,
+                        responseCodes.INFO.CHECKING_BUCKET_STATUS_SUCCESSFULL,
+                        exists
+                    );
+                    logger.success(
+                        `${this._className}.bucketExists: ${
+                            successResponse.name
+                        }`
+                    );
+                    return resolve(successResponse);
+                }
+            );
+        });
     }
 }
 
-module.exports = MinioHelper;
+/**
+ * @typedef {Object} BucketNameParams
+ * @property {string} bucketName - Indicates bucket name
+ */
+export type BucketNameParams = { bucketName: string };
+
+/**
+ * @typedef {Object} PutObjectParams
+ * @property {string} bucketName - Indicates bucket name
+ * @property {string} filePath - Indicates file path
+ */
+export type PutObjectParams = { bucketName: string; filePath: string };
+
+/**
+ * @typedef {Object} PutObjectParams
+ * @property {string} bucketName - Indicates bucket name
+ * @property {string} fileName - Indicates file name
+ */
+export type FileNameParams = { bucketName: string; fileName: string };

@@ -1,5 +1,4 @@
-declare const serviceResponseTypes: any;
-declare class ServiceResponse {
+export declare class ServiceResponse {
     private _type;
     private _name;
     private _message;

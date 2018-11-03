@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for minio/index.js</title>
+    <title>Code coverage report for minio/index.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -16,7 +16,7 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../index.html">All files</a> / <a href="index.html">minio</a> index.js
+      <a href="../index.html">All files</a> / <a href="index.html">minio</a> index.ts
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
@@ -25,9 +25,9 @@
         <span class='fraction'>12/16</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">57.14% </span>
+        <span class="strong">66.67% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/7</span>
+        <span class='fraction'>4/6</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -68,55 +68,109 @@
 23
 24
 25
-26</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
-const MinioHelper = require("./MinioHelper");
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { MinioHelper } from "./MinioHelper";
 const logger = require("../logger");
 const moduleName = "MinioHelper";
+&nbsp;
 /**
  *
  * @param params
  */
-const initialize = (params = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; {
+export const initialize = (
+    params: InitializationParams
+): MinioHelper | null =&gt; {
     const { accessKey, secretKey, endPoint } = params;
     if (!endPoint) {
-        logger.error(`${moduleName}: Cannot Initialize : undefined or invalid endPoint.`);
+        logger.error(
+            `${moduleName}: Cannot Initialize : undefined or invalid endPoint.`
+        );
         return null;
     }
+&nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!accessKey) {
-<span class="cstat-no" title="statement not covered" >        logger.error(`${moduleName}: Cannot Initialize : undefined or invalid accessKey.`);</span>
+<span class="cstat-no" title="statement not covered" >        logger.error(</span>
+            `${moduleName}: Cannot Initialize : undefined or invalid accessKey.`
+        );
 <span class="cstat-no" title="statement not covered" >        return null;</span>
     }
+&nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!secretKey) {
-<span class="cstat-no" title="statement not covered" >        logger.error(`${moduleName}: Cannot Initialize : undefined or invalid secretKey.`);</span>
+<span class="cstat-no" title="statement not covered" >        logger.error(</span>
+            `${moduleName}: Cannot Initialize : undefined or invalid secretKey.`
+        );
 <span class="cstat-no" title="statement not covered" >        return null;</span>
     }
+&nbsp;
     return new MinioHelper(accessKey, secretKey, endPoint);
 };
+&nbsp;
+export type InitializationParams = {
+    endPoint: string;
+    accessKey: string;
+    secretKey: string;
+};
+&nbsp;
 module.exports = { initialize };
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -124,7 +178,7 @@ module.exports = { initialize };
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Nov 02 2018 16:35:36 GMT-0700 (PDT)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sat Nov 03 2018 11:08:16 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

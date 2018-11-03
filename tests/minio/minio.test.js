@@ -1,21 +1,11 @@
 const minioHelperFactory = require("../../minio").initialize;
 const path = require("path");
-const testbucket = "testbucket";
-const invalidbucket = "invalidbucket";
-const helper = require("../helper");
-const Minio = require("minio");
+const helper = require("../helper/minio");
 const {
     accessKey,
     secretKey,
     endPoint
 } = process.env;
-
-const minioClient = new Minio.Client({
-    endPoint,
-    useSSL: true,
-    accessKey,
-    secretKey
-});
 
 describe("test input parameters", () => {
     test("accessKey must be present", () => {
@@ -155,7 +145,7 @@ describe("test getBucketList()", () => {
 describe("test createBucket()", () => {
     /**
      * Before All
-     * 1. Get bucket name with timestamp. const newBucket
+     * 1. Get bucket name with timestamp. const bucketName
      * 2. Use minio helper api to create bucket and save reponse
      *      2.1 Validate response
      * 3. Use minio client api to get bucket list
@@ -163,10 +153,10 @@ describe("test createBucket()", () => {
      * 
      * 
      * After All
-     * 1. Use minio client api to delete the bucket (newBucket)
+     * 1. Use minio client api to delete the bucket (bucketName)
      *      1.1 If delete bucket fails - console log it!
      */
-    const newBucket = `testbucket-${Date.now()}`;
+    const bucketName = `testbucket-${Date.now()}`;
     let bucketCreateResponse = null;
     let bucketList = [];
     beforeAll(async (done) => {
@@ -177,7 +167,9 @@ describe("test createBucket()", () => {
             endPoint
         });
 
-        bucketCreateResponse = await mh.createBucket(newBucket);
+        bucketCreateResponse = await mh.createBucket({
+            bucketName
+        });
 
         try {
             bucketList = await helper.listBuckets();
@@ -204,14 +196,14 @@ describe("test createBucket()", () => {
 
     test("createBucket() new bucket should be in the list", () => {
         const createdBucket = bucketList.find((bc) => {
-            return bc.name === newBucket;
+            return bc === bucketName;
         });
 
         expect(createdBucket).toBeDefined();
     });
 
     afterAll(async (done) => {
-        await helper.deleteTestBucket(newBucket);
+        await helper.deleteTestBucket(bucketName);
         done();
     }, 15000);
 });
@@ -230,7 +222,7 @@ describe("test removeBucket()", () => {
      * After All
      * 
      */
-    const newBucket = `testbucket-${Date.now()}`;
+    const bucketName = `testbucket-${Date.now()}`;
     let bucketDeleteResponse = null;
     let bucketList = [];
     beforeAll(async (done) => {
@@ -242,8 +234,10 @@ describe("test removeBucket()", () => {
         });
 
         try {
-            const makeBucketResponse = await helper.createTestBucket(newBucket);
-            bucketDeleteResponse = await mh.removeBucket(newBucket);
+            const makeBucketResponse = await helper.createTestBucket(bucketName);
+            bucketDeleteResponse = await mh.removeBucket({
+                bucketName
+            });
             bucketList = await helper.listBuckets();
             done()
         } catch (e) {
@@ -270,7 +264,7 @@ describe("test removeBucket()", () => {
 
     afterAll(async (done) => {
         // Calling delete in case the test fails. 
-        await helper.deleteTestBucket(newBucket);
+        await helper.deleteTestBucket(bucketName);
         done();
     }, 15000);
 });
@@ -288,10 +282,10 @@ describe("test putObject()", () => {
      * After All
      * 1. Remove test bucket using minio client.
      */
-    const newBucket = `testbucket-${Date.now()}`;
+    const bucketName = `testbucket-${Date.now()}`;
     let putObjectResponse = null;
     let bucketList = [];
-    const objectPath = path.resolve(__dirname, '../data/test_file.json');
+    const filePath = path.resolve(__dirname, '../data/test_file.json');
     beforeAll(async (done) => {
 
         mh = minioHelperFactory({
@@ -301,8 +295,13 @@ describe("test putObject()", () => {
         });
 
         try {
-            const makeBucketResponse = await helper.createTestBucket(newBucket);
-            putObjectResponse = await mh.putObject(newBucket, objectPath);
+            await helper.createTestBucket(bucketName);
+            putObjectResponse = await mh.putObject({
+                bucketName,
+                filePath
+            });
+
+            bucketList = await helper.listBuckets();
             done();
         } catch (e) {
             console.error('Error creating test bucket', e);
@@ -327,9 +326,85 @@ describe("test putObject()", () => {
         expect(putObjectResponse._name === "FILE_UPLOAD_SUCCESSFULL").toBeTruthy();
     });
 
+    test("putObject() bucket should be present", () => {
+        expect(bucketList.indexOf(bucketName)).toBeGreaterThanOrEqual(0);
+    });
+
     afterAll(async (done) => {
-        await helper.deleteTestData(newBucket);
-        await helper.deleteTestBucket(newBucket);
+        await helper.deleteTestData(bucketName);
+        await helper.deleteTestBucket(bucketName);
+        done();
+    }, 15000);
+});
+
+describe("test getObject()", () => {
+    /**
+     * beforeAll:
+     * 1. create test bucket using helper code
+     * 2. upload test file in test bucket using helper code
+     * 3. call getObject()
+     * 
+     * tests
+     * 1. Test response object
+     * 2. Test data returned by getObject.
+     * 
+     * afterAll:
+     * 1. Delete test object.
+     * 2. Delete test bucket.
+     */
+    const bucketName = `testbucket-${Date.now()}`;
+    let getObjectResponse = null;
+    let bucketList = [];
+    const filePath = path.resolve(__dirname, '../data/test_file.json');
+    const fileName = path.basename(filePath);
+    beforeAll(async (done) => {
+        try {
+            await helper.createTestBucket(bucketName);
+            await helper.uploadTestData(bucketName, filePath);
+
+            getObjectResponse = await mh.getObject({
+                bucketName,
+                fileName
+            });
+            done();
+        } catch (error) {
+            console.error('Error creating test data', error);
+            done();
+        }
+    }, 15000);
+
+    test("getObject() response to be defined", () => {
+        expect(getObjectResponse).toBeDefined();
+    });
+
+    test("putObject() response should be an object", () => {
+        expect(typeof (getObjectResponse) === "object").toBeTruthy();
+    });
+
+    test("putObject() response type should be success", () => {
+        expect(getObjectResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("putObject() response name should match", () => {
+        expect(getObjectResponse._name === "GET_OBJECT_SUCCESSFULL").toBeTruthy();
+    });
+
+    test("getObject() data should match test data", () => {
+        const {
+            data
+        } = getObjectResponse;
+
+        expect(data).toBeDefined();
+
+        const dataObj = JSON.parse(data);
+
+        expect(dataObj.foo).toBeDefined();
+        expect(dataObj.foo).toEqual("bar");
+    });
+
+    afterAll(async (done) => {
+        await helper.deleteTestData(bucketName);
+        await helper.deleteTestBucket(bucketName);
         done();
     }, 15000);
 });
