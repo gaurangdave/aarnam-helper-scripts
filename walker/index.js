@@ -3,9 +3,9 @@ const Objservable = require('rxjs').Observable;
 const filter = require('rxjs/operators').filter;
 const fs = require('fs');
 const walk = require('walk');
-const filters = require('../filters');
+const filters = require('./filters');
 
-const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
+// const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 
 // hard coded array of directories to ignore
 const directoriesToIgnore = ['node_modules', '.git', '.eslintignore', '.idea'];
@@ -30,14 +30,14 @@ const extensionsToIgnore = ['.ts', '.map'];
 /**
  * Generic node walker to walk through a given directory. Triggers events based on file type passed.
  * @param {*} type
- * @param {*} dirName
+ * @param {*} dirPath
  * @return Observable
  */
-const nodeWalker = (type, dirName) =>
+const nodeWalker = (type, dirPath) =>
      Objservable.create(observer => {
-          const directoryToParse = path.resolve(ROOT_DIR, dirName);
-          if (!fs.existsSync(directoryToParse)) {
-               observer.error(`${directoryToParse} does not exist!`);
+          // const directoryToParse = path.resolve(ROOT_DIR, dirPath);
+          if (!fs.existsSync(dirPath)) {
+               observer.error(`${dirPath} does not exist!`);
                observer.complete();
           }
 
@@ -46,7 +46,7 @@ const nodeWalker = (type, dirName) =>
                filters: directoriesToIgnore,
           };
 
-          walker = walk.walk(directoryToParse, options);
+          walker = walk.walk(dirPath, options);
 
           walker.on(type, function (root, fileStats, next) {
                observer.next(`${root}/${fileStats.name}`);
