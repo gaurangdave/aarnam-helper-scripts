@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1541284757123" clover="3.2.0">
-  <project timestamp="1541284757124" name="All files">
-    <metrics statements="441" coveredstatements="283" conditionals="117" coveredconditionals="59" methods="117" coveredmethods="85" elements="675" coveredelements="427" complexity="0" loc="441" ncloc="441" packages="7" files="10" classes="10">
+<coverage generated="1541425478269" clover="3.2.0">
+  <project timestamp="1541425478269" name="All files">
+    <metrics statements="444" coveredstatements="286" conditionals="117" coveredconditionals="59" methods="117" coveredmethods="85" elements="678" coveredelements="430" complexity="0" loc="444" ncloc="444" packages="8" files="13" classes="13">
+      <package name="constants">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <file name="google.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/constants/google.ts">
+          <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+          <line num="1" count="1" type="stmt"/>
+        </file>
+        <file name="minio.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/constants/minio.ts">
+          <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+          <line num="1" count="1" type="stmt"/>
+        </file>
+        <file name="service_response.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/constants/service_response.ts">
+          <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+          <line num="1" count="2" type="stmt"/>
+        </file>
+      </package>
       <package name="google.storage">
         <metrics statements="130" coveredstatements="82" conditionals="31" coveredconditionals="20" methods="32" coveredmethods="23"/>
         <file name="GoogleStorageHelper.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/google/storage/GoogleStorageHelper.ts">
@@ -143,32 +158,32 @@
       </package>
       <package name="logger">
         <metrics statements="24" coveredstatements="15" conditionals="4" coveredconditionals="1" methods="5" coveredmethods="3"/>
-        <file name="index.js" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/logger/index.js">
+        <file name="index.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/logger/index.ts">
           <metrics statements="24" coveredstatements="15" conditionals="4" coveredconditionals="1" methods="5" coveredmethods="3"/>
           <line num="1" count="2" type="stmt"/>
           <line num="3" count="2" type="stmt"/>
-          <line num="4" count="19" type="cond" truecount="1" falsecount="1"/>
-          <line num="5" count="19" type="stmt"/>
-          <line num="11" count="0" type="cond" truecount="0" falsecount="2"/>
-          <line num="12" count="0" type="stmt"/>
-          <line num="18" count="0" type="stmt"/>
-          <line num="24" count="2" type="stmt"/>
+          <line num="7" count="19" type="cond" truecount="1" falsecount="1"/>
+          <line num="8" count="19" type="stmt"/>
+          <line num="14" count="0" type="cond" truecount="0" falsecount="2"/>
+          <line num="15" count="0" type="stmt"/>
+          <line num="21" count="0" type="stmt"/>
+          <line num="27" count="2" type="stmt"/>
           <line num="28" count="0" type="stmt"/>
           <line num="29" count="0" type="stmt"/>
           <line num="30" count="0" type="stmt"/>
           <line num="33" count="2" type="stmt"/>
-          <line num="37" count="0" type="stmt"/>
-          <line num="38" count="0" type="stmt"/>
-          <line num="39" count="0" type="stmt"/>
-          <line num="42" count="2" type="stmt"/>
-          <line num="46" count="6" type="stmt"/>
-          <line num="47" count="6" type="stmt"/>
-          <line num="48" count="6" type="stmt"/>
+          <line num="34" count="0" type="stmt"/>
+          <line num="35" count="0" type="stmt"/>
+          <line num="36" count="0" type="stmt"/>
+          <line num="39" count="2" type="stmt"/>
+          <line num="40" count="6" type="stmt"/>
+          <line num="41" count="6" type="stmt"/>
+          <line num="42" count="6" type="stmt"/>
+          <line num="45" count="2" type="stmt"/>
+          <line num="46" count="13" type="stmt"/>
+          <line num="47" count="13" type="stmt"/>
+          <line num="48" count="13" type="stmt"/>
           <line num="51" count="2" type="stmt"/>
-          <line num="55" count="13" type="stmt"/>
-          <line num="56" count="13" type="stmt"/>
-          <line num="57" count="13" type="stmt"/>
-          <line num="60" count="2" type="stmt"/>
         </file>
       </package>
       <package name="minio">
@@ -472,26 +487,26 @@
           <line num="73" count="0" type="stmt"/>
           <line num="74" count="0" type="stmt"/>
           <line num="76" count="2" type="stmt"/>
-          <line num="77" count="61" type="stmt"/>
+          <line num="77" count="63" type="stmt"/>
           <line num="79" count="2" type="stmt"/>
           <line num="85" count="1" type="stmt"/>
         </file>
       </package>
       <package name="validators">
         <metrics statements="8" coveredstatements="7" conditionals="7" coveredconditionals="6" methods="2" coveredmethods="2"/>
-        <file name="array.validator.js" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/validators/array.validator.js">
+        <file name="array.validator.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/validators/array.validator.ts">
           <metrics statements="3" coveredstatements="3" conditionals="3" coveredconditionals="3" methods="1" coveredmethods="1"/>
           <line num="1" count="1" type="stmt"/>
           <line num="2" count="1" type="cond" truecount="3" falsecount="0"/>
           <line num="5" count="1" type="stmt"/>
         </file>
-        <file name="string.validator.js" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/validators/string.validator.js">
+        <file name="string.validator.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/validators/string.validator.ts">
           <metrics statements="5" coveredstatements="4" conditionals="4" coveredconditionals="3" methods="1" coveredmethods="1"/>
           <line num="1" count="2" type="stmt"/>
           <line num="2" count="14" type="cond" truecount="3" falsecount="1"/>
           <line num="3" count="14" type="stmt"/>
           <line num="6" count="0" type="stmt"/>
-          <line num="10" count="2" type="stmt"/>
+          <line num="9" count="2" type="stmt"/>
         </file>
       </package>
     </metrics>

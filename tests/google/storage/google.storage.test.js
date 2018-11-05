@@ -1,4 +1,4 @@
-const googleHeplerFactory = require("../../../google/storage").initialize;
+const googleHeplerFactory = require("../../../dist/google/storage").initialize;
 const fs = require('fs');
 const path = require('path');
 const keyFilePath = `${process.env.secretPath}/google.aarnamobjects.json`;

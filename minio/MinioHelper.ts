@@ -7,7 +7,7 @@ const Q = require("q");
 const fs = require("fs");
 const path = require("path");
 const logger = require("../logger");
-const responseCodes = require("../constants/minio.json");
+const responseCodes = require("../constants/minio");
 const isValidString = require("../validators/string.validator").isValidString;
 const isValidNonEmptyArray = require("../validators/array.validator")
     .isValidNonEmptyArray;
@@ -629,5 +629,3 @@ export type PutObjectParams = { bucketName: string; filePath: string };
  * @property {string} fileName - Indicates file name
  */
 export type FileNameParams = { bucketName: string; fileName: string };
-
-module.exports = MinioHelper;

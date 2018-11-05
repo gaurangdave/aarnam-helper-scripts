@@ -40,4 +40,4 @@ export type InitializationParams = {
     secretKey: string;
 };
 
-module.exports = initialize;
+module.exports = { initialize };

@@ -1,6 +1,6 @@
-const path = require('path');
+const path = require("path");
 
-const ignoreFiles = params => {
+const ignoreFiles = (params: any) => {
     const { filePath, filesToIgnore = [], extensionsToIgnore = [] } = params;
 
     if (!filePath) {
@@ -24,5 +24,5 @@ const ignoreFiles = params => {
 };
 
 module.exports = {
-    ignoreFiles,
+    ignoreFiles
 };

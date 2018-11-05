@@ -1,4 +1,4 @@
-const minioHelperFactory = require("../../minio").initialize;
+const minioHelperFactory = require("../../dist/minio").initialize;
 const path = require("path");
 const helper = require("../helper/minio");
 const fs = require("fs");
@@ -10,7 +10,7 @@ const {
     endPoint
 } = JSON.parse(secretData);
 
-describe("test input parameters", () => {
+describe("test input parameters", () => {   
     test("accessKey must be present", () => {
         expect(accessKey).toBeDefined();
     });

@@ -1,4 +1,4 @@
-const serviceResponseTypes = require("../constants/service_response.json");
+const serviceResponseTypes = require("../constants/service_response");
 export class ServiceResponse {
     private _type: string;
     private _name: string;

@@ -7,7 +7,7 @@ const logger = require("../../logger");
 const fs = require("fs");
 const Q = require("q");
 
-const responseCodes = require("../../constants/google.json");
+const responseCodes = require("../../constants/google");
 const isValidString = require("../../validators/string.validator")
     .isValidString;
 
