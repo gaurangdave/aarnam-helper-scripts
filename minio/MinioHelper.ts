@@ -629,3 +629,5 @@ export type PutObjectParams = { bucketName: string; filePath: string };
  * @property {string} fileName - Indicates file name
  */
 export type FileNameParams = { bucketName: string; fileName: string };
+
+module.exports = MinioHelper;
