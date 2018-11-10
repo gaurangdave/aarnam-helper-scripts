@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1541426821310" clover="3.2.0">
-  <project timestamp="1541426821310" name="All files">
-    <metrics statements="492" coveredstatements="307" conditionals="131" coveredconditionals="59" methods="126" coveredmethods="85" elements="749" coveredelements="451" complexity="0" loc="492" ncloc="492" packages="10" files="16" classes="16">
+<coverage generated="1541658437970" clover="3.2.0">
+  <project timestamp="1541658437971" name="All files">
+    <metrics statements="493" coveredstatements="308" conditionals="131" coveredconditionals="59" methods="126" coveredmethods="85" elements="750" coveredelements="452" complexity="0" loc="493" ncloc="493" packages="10" files="16" classes="16">
       <package name="aarnam-helper-scripts">
-        <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <file name="index.ts" path="/Users/gaurangdave/workspace/aarnam-helper-scripts/index.ts">
-          <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+          <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
           <line num="1" count="2" type="stmt"/>
           <line num="2" count="2" type="stmt"/>
           <line num="3" count="2" type="stmt"/>
           <line num="4" count="2" type="stmt"/>
-          <line num="10" count="2" type="stmt"/>
+          <line num="5" count="2" type="stmt"/>
+          <line num="6" count="2" type="stmt"/>
         </file>
       </package>
       <package name="aarnam-helper-scripts.lib.constants">

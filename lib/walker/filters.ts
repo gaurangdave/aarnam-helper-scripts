@@ -1,6 +1,6 @@
 const path = require("path");
 
-const ignoreFiles = (params: any) => {
+export const ignoreFiles = (params: any) => {
     const { filePath, filesToIgnore = [], extensionsToIgnore = [] } = params;
 
     if (!filePath) {

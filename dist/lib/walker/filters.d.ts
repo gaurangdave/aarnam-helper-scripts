@@ -1,2 +1,1 @@
-declare const path: any;
-declare const ignoreFiles: (params: any) => boolean;
+export declare const ignoreFiles: (params: any) => boolean;

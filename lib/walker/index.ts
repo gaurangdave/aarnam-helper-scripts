@@ -1,17 +1,14 @@
-import { Stats } from "fs";
-
 const path = require("path");
-const Objservable = require("rxjs").Observable;
-const filter = require("rxjs/operators").filter;
 const fs = require("fs");
 const walk = require("walk");
-const filters = require("./filters");
 
-// const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
+import { Observable } from "rxjs";
+import { filter } from "rxjs/operators";
+import { ignoreFiles } from "./filters";
 
 // hard coded array of directories to ignore
 const directoriesToIgnore = ["node_modules", ".git", ".eslintignore", ".idea"];
-//
+
 const filesToIgnore = [
     ".eslintignore",
     ".eslintrc.json",
@@ -35,8 +32,8 @@ const extensionsToIgnore = [".ts", ".map"];
  * @param {*} dirPath
  * @return Observable
  */
-const nodeWalker = (type: string, dirPath: string) =>
-    Objservable.create((observer: any) => {
+const nodeWalker = (type: string, dirPath: string): Observable<string> =>
+    Observable.create((observer: any) => {
         // const directoryToParse = path.resolve(ROOT_DIR, dirPath);
         if (!fs.existsSync(dirPath)) {
             observer.error(`${dirPath} does not exist!`);
@@ -74,17 +71,17 @@ const nodeWalker = (type: string, dirPath: string) =>
  * @param {*} dirName
  * @return {Observer<T>}
  */
-export const directoryWalker = (dirName: string) =>
+export const directoryWalker = (dirName: string): Observable<string> =>
     nodeWalker("directory", dirName);
 
 /**
  * Function to create stream of files from given source.
  * @param {*} dirName
  */
-export const fileWalker = (dirName: string) =>
+export const fileWalker = (dirName: string): Observable<string> =>
     nodeWalker("file", dirName).pipe(
         filter((filePath: string) =>
-            filters.ignoreFiles({
+            ignoreFiles({
                 filePath,
                 filesToIgnore,
                 extensionsToIgnore

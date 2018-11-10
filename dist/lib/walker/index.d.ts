@@ -1,2 +1,3 @@
-export declare const directoryWalker: (dirName: string) => any;
-export declare const fileWalker: (dirName: string) => any;
+import { Observable } from "rxjs";
+export declare const directoryWalker: (dirName: string) => Observable<string>;
+export declare const fileWalker: (dirName: string) => Observable<string>;
