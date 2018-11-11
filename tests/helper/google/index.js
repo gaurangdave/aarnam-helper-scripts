@@ -3,7 +3,7 @@ const Q = require("q");
 const fs = require("fs");
 const path = require("path");
 
-const keyFilename = `${process.env.secretPath}/google.aarnamobjects.json`;
+const keyFilename = `${process.env.googleKeyFile}`;
 const projectId = 'aarnamobjects';
 const storage = new GoogleStorage({
      keyFilename,

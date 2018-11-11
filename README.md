@@ -26,4 +26,4 @@ A collection of helper scripts that are reused across many of my projects
 # Testing
 
 -   Create a folder with access files (JSON) for Google Storage and Minio.
--   Run the following command `secretPath=/path/to/secrets npm test`
+-   Run the following command `minioKeyFile=/path/to/minio_secret.json googleKeyFile=/path/to/google_secret.json npm test`
