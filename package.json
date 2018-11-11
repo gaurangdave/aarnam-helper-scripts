@@ -1,12 +1,13 @@
 {
   "name": "aarnam-helper-scripts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "helper scripts",
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
     "lint": "eslint",
-    "build": "tsc"
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "author": "Gaurang Dave",
   "license": "ISC",
