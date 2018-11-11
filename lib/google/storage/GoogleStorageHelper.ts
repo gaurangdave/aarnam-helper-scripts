@@ -29,7 +29,7 @@ export class GoogleStorageHelper {
      * @returns {Promise<ServiceResponse>}
      * @memberof GoogleStorageHelper
      */
-    public createBucket(params: any): Promise<ServiceResponse> {
+    public createBucket(params: CreateBucketParams): Promise<ServiceResponse> {
         return new Q.Promise(async (resolve: Function, reject: Function) => {
             const {
                 bucketName,
@@ -146,7 +146,7 @@ export class GoogleStorageHelper {
      * @returns {Promise<ServiceResponse>}
      * @memberof GoogleStorageHelper
      */
-    public removeBucket(params: any): Promise<ServiceResponse> {
+    public removeBucket(params: BucketNameParams): Promise<ServiceResponse> {
         return new Promise((resolve: Function, reject: Function) => {
             const { bucketName } = params;
 
@@ -191,7 +191,7 @@ export class GoogleStorageHelper {
         });
     }
 
-    public emptyBucket(params: any): Promise<ServiceResponse> {
+    public emptyBucket(params: BucketNameParams): Promise<ServiceResponse> {
         return new Promise((resolve: Function, reject: Function) => {
             const { bucketName } = params;
             if (!isValidString(bucketName)) {
@@ -247,7 +247,7 @@ export class GoogleStorageHelper {
      * @returns {Promise<boolean>}
      * @memberof GoogleStorageHelper
      */
-    public bucketExists(params: any): Promise<ServiceResponse> {
+    public bucketExists(params: BucketNameParams): Promise<ServiceResponse> {
         return new Q.Promise(async (resolve: Function, reject: Function) => {
             const { bucketName } = params;
             if (!isValidString(bucketName)) {
@@ -286,7 +286,7 @@ export class GoogleStorageHelper {
                     );
 
                     logger.success(
-                        `${this._className}.emptyBucket: ${
+                        `${this._className}.bucketExists: ${
                             successResponse.name
                         }`
                     );
@@ -303,7 +303,7 @@ export class GoogleStorageHelper {
      * @returns {Promise<ServiceResponse>}
      * @memberof GoogleStorageHelper
      */
-    public putObject(params: any): Promise<ServiceResponse> {
+    public putObject(params: PutObjectParams): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
             const { bucketName, filePath, isPublic = false } = params;
 
@@ -367,21 +367,42 @@ export class GoogleStorageHelper {
         });
     }
 
-    public listObjects(params: any): Promise<ServiceResponse> {
+    public listObjects(params: BucketNameParams): Promise<ServiceResponse> {
         return new Promise((resolve: Function, reject: Function) => {
             const { bucketName } = params;
         });
     }
 
-    public getObject(params: any): Promise<ServiceResponse> {
+    public getObject(params: FileNameParams): Promise<ServiceResponse> {
         return new Promise((resolve: Function, reject: Function) => {
             const { bucketName, fileName } = params;
         });
     }
 
-    public removeObject(params: any): Promise<ServiceResponse> {
+    public removeObject(params: FileNameParams): Promise<ServiceResponse> {
         return new Promise((resolve: Function, reject: Function) => {
             const { bucketName, fileName } = params;
         });
     }
 }
+
+export type CreateBucketParams = {
+    bucketName: string;
+    isBucketPublic: boolean;
+    areFilesPublic: boolean;
+};
+
+export type BucketNameParams = {
+    bucketName: string;
+};
+
+export type PutObjectParams = {
+    bucketName: string;
+    filePath: string;
+    isPublic: boolean;
+};
+
+export type FileNameParams = {
+    bucketName: string;
+    fileName: string;
+};
