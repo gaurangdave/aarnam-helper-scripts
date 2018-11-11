@@ -286,7 +286,7 @@ export class GoogleStorageHelper {
                     );
 
                     logger.success(
-                        `${this._className}.emptyBucket: ${
+                        `${this._className}.bucketExists: ${
                             successResponse.name
                         }`
                     );

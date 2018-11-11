@@ -2,7 +2,7 @@ const minioHelperFactory = require("../../dist").minio;
 const path = require("path");
 const helper = require("../helper/minio");
 const fs = require("fs");
-const secretData = fs.readFileSync(`${process.env.secretPath}/minio.json`);
+const secretData = fs.readFileSync(`${process.env.minioKeyFile}`);
 
 const {
     accessKey,
