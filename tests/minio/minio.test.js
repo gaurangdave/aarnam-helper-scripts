@@ -1,4 +1,4 @@
-const minioHelperFactory = require("../../minio").initialize;
+const minioHelperFactory = require("../../dist").minio;
 const path = require("path");
 const helper = require("../helper/minio");
 const fs = require("fs");
@@ -28,19 +28,19 @@ describe("test object initialization", () => {
     let mh = null;
 
     test("object should be null - missing all keys", () => {
-        mh = minioHelperFactory({});
+        mh = minioHelperFactory.initialize({});
         expect(mh).toBeNull();
     });
 
     test("object should be null - missing secretKey and endPoint", () => {
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey
         });
         expect(mh).toBeNull();
     });
 
     test("object should be null - missing endPoint", () => {
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey
         });
@@ -48,7 +48,7 @@ describe("test object initialization", () => {
     });
 
     test("object should be defined", () => {
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
@@ -60,7 +60,7 @@ describe("test object initialization", () => {
 describe("test exported members", () => {
     let mh = {};
     beforeAll(() => {
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
@@ -111,7 +111,7 @@ describe("test getBucketList()", () => {
     let bucketListResponse = null;
     beforeAll(async () => {
 
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
@@ -164,7 +164,7 @@ describe("test createBucket()", () => {
     let bucketList = [];
     beforeAll(async (done) => {
 
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
@@ -239,7 +239,7 @@ describe("test removeBucket()", () => {
     let bucketList = [];
     beforeAll(async (done) => {
 
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
@@ -304,7 +304,7 @@ describe("test putObject()", () => {
     const filePath = path.resolve(__dirname, '../data/test_file.json');
     beforeAll(async (done) => {
 
-        mh = minioHelperFactory({
+        mh = minioHelperFactory.initialize({
             accessKey,
             secretKey,
             endPoint
