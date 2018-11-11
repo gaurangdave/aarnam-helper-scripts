@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 
-const secretData = fs.readFileSync(`${process.env.secretPath}/minio.json`);
+const secretData = fs.readFileSync(`${process.env.minioKeyFile}`);
 
 const {
      accessKey,

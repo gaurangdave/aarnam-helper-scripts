@@ -430,7 +430,28 @@
 385
 386
 387
-388</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -814,6 +835,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -848,7 +890,7 @@ export class GoogleStorageHelper {
      * @returns {Promise&lt;ServiceResponse&gt;}
      * @memberof GoogleStorageHelper
      */
-    public createBucket(params: any): Promise&lt;ServiceResponse&gt; {
+    public createBucket(params: CreateBucketParams): Promise&lt;ServiceResponse&gt; {
         return new Q.Promise(async (resolve: Function, reject: Function) =&gt; {
             const {
                 bucketName,
@@ -965,7 +1007,7 @@ export class GoogleStorageHelper {
      * @returns {Promise&lt;ServiceResponse&gt;}
      * @memberof GoogleStorageHelper
      */
-    public removeBucket(params: any): Promise&lt;ServiceResponse&gt; {
+    public removeBucket(params: BucketNameParams): Promise&lt;ServiceResponse&gt; {
         return new Promise((resolve: Function, reject: Function) =&gt; {
             const { bucketName } = params;
 &nbsp;
@@ -1010,7 +1052,7 @@ export class GoogleStorageHelper {
         });
     }
 &nbsp;
-    public emptyBucket(params: any): Promise&lt;ServiceResponse&gt; {
+    public emptyBucket(params: BucketNameParams): Promise&lt;ServiceResponse&gt; {
         return new Promise((resolve: Function, reject: Function) =&gt; {
             const { bucketName } = params;
             <span class="missing-if-branch" title="if path not taken" >I</span>if (!isValidString(bucketName)) {
@@ -1066,7 +1108,7 @@ export class GoogleStorageHelper {
      * @returns {Promise&lt;boolean&gt;}
      * @memberof GoogleStorageHelper
      */
-    public bucketExists(params: any): Promise&lt;ServiceResponse&gt; {
+    public bucketExists(params: BucketNameParams): Promise&lt;ServiceResponse&gt; {
         return new Q.Promise(async (resolve: Function, reject: Function) =&gt; {
             const { bucketName } = params;
             <span class="missing-if-branch" title="if path not taken" >I</span>if (!isValidString(bucketName)) {
@@ -1105,7 +1147,7 @@ export class GoogleStorageHelper {
                     );
 &nbsp;
                     logger.success(
-                        `${this._className}.emptyBucket: ${
+                        `${this._className}.bucketExists: ${
                             successResponse.name
                         }`
                     );
@@ -1122,7 +1164,7 @@ export class GoogleStorageHelper {
      * @returns {Promise&lt;ServiceResponse&gt;}
      * @memberof GoogleStorageHelper
      */
-    public putObject(params: any): Promise&lt;ServiceResponse&gt; {
+    public putObject(params: PutObjectParams): Promise&lt;ServiceResponse&gt; {
         return new Q.Promise((resolve: Function, reject: Function) =&gt; {
             const { bucketName, filePath, isPublic = false } = params;
 &nbsp;
@@ -1186,31 +1228,52 @@ export class GoogleStorageHelper {
         });
     }
 &nbsp;
-    public <span class="fstat-no" title="function not covered" >listObjects</span>(params: any): Promise&lt;ServiceResponse&gt; {
+    public <span class="fstat-no" title="function not covered" >listObjects</span>(params: BucketNameParams): Promise&lt;ServiceResponse&gt; {
 <span class="cstat-no" title="statement not covered" >        return new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve: Function, reject: Function) =&gt; {</span>
             const { bucketName } = <span class="cstat-no" title="statement not covered" >params;</span>
         });
     }
 &nbsp;
-    public <span class="fstat-no" title="function not covered" >getObject</span>(params: any): Promise&lt;ServiceResponse&gt; {
+    public <span class="fstat-no" title="function not covered" >getObject</span>(params: FileNameParams): Promise&lt;ServiceResponse&gt; {
 <span class="cstat-no" title="statement not covered" >        return new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve: Function, reject: Function) =&gt; {</span>
             const { bucketName, fileName } = <span class="cstat-no" title="statement not covered" >params;</span>
         });
     }
 &nbsp;
-    public <span class="fstat-no" title="function not covered" >removeObject</span>(params: any): Promise&lt;ServiceResponse&gt; {
+    public <span class="fstat-no" title="function not covered" >removeObject</span>(params: FileNameParams): Promise&lt;ServiceResponse&gt; {
 <span class="cstat-no" title="statement not covered" >        return new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve: Function, reject: Function) =&gt; {</span>
             const { bucketName, fileName } = <span class="cstat-no" title="statement not covered" >params;</span>
         });
     }
 }
+&nbsp;
+export type CreateBucketParams = {
+    bucketName: string;
+    isBucketPublic: boolean;
+    areFilesPublic: boolean;
+};
+&nbsp;
+export type BucketNameParams = {
+    bucketName: string;
+};
+&nbsp;
+export type PutObjectParams = {
+    bucketName: string;
+    filePath: string;
+    isPublic: boolean;
+};
+&nbsp;
+export type FileNameParams = {
+    bucketName: string;
+    fileName: string;
+};
 &nbsp;</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Wed Nov 07 2018 22:27:17 GMT-0800 (PST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sun Nov 11 2018 12:40:58 GMT-0800 (PST)
 </div>
 </div>
 <script src="../../../../prettify.js"></script>
