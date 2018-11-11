@@ -1,4 +1,4 @@
-const googleHeplerFactory = require("../../../google/storage").initialize;
+const googleHeplerFactory = require("../../../dist").google_storage;
 const fs = require('fs');
 const path = require('path');
 const keyFilePath = `${process.env.secretPath}/google.aarnamobjects.json`;
@@ -25,26 +25,26 @@ describe("test object initialization", () => {
      let gsh = null;
 
      test("object should be null - missing all keys", () => {
-          gsh = googleHeplerFactory({});
+          gsh = googleHeplerFactory.initialize({});
           expect(gsh).toBeNull();
      });
 
      test("object should be null - missing keyFilePath", () => {
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                projectId
           });
           expect(gsh).toBeNull();
      });
 
      test("object should be null - missing projectId", () => {
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath
           });
           expect(gsh).toBeNull();
      });
 
      test("object should be defined", () => {
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -55,7 +55,7 @@ describe("test object initialization", () => {
 describe("test exported memebers", () => {
      let gsh = {};
      beforeAll(() => {
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -101,7 +101,7 @@ describe("test getBucketList()", () => {
      let bucketListResponse = null;
      beforeAll(async () => {
 
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -153,7 +153,7 @@ describe("test createBucket()", () => {
      let bucketList = [];
      beforeAll(async (done) => {
 
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -227,7 +227,7 @@ describe("test removeBucket()", () => {
      let gsh = null;
      beforeAll(async (done) => {
 
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -295,7 +295,7 @@ describe("test putObject()", () => {
      const filePath = path.resolve(__dirname, '../../data/test_file.json');
      beforeAll(async (done) => {
 
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
@@ -364,7 +364,7 @@ describe("test emptyBucket()", () => {
      let gsh = null;
      beforeAll(async (done) => {
 
-          gsh = googleHeplerFactory({
+          gsh = googleHeplerFactory.initialize({
                keyFilePath,
                projectId
           });
