@@ -5,6 +5,7 @@ const walk = require("walk");
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import { ignoreFiles } from "./filters";
+import { dirname } from "path";
 
 // hard coded array of directories to ignore
 const directoriesToIgnore = ["node_modules", ".git", ".eslintignore", ".idea"];
@@ -32,7 +33,10 @@ const extensionsToIgnore = [".ts", ".map"];
  * @param {*} dirPath
  * @return Observable
  */
-const nodeWalker = (type: string, dirPath: string): Observable<string> =>
+const nodeWalker = (
+    type: string = "all",
+    dirPath: string
+): Observable<string> =>
     Observable.create((observer: any) => {
         // const directoryToParse = path.resolve(ROOT_DIR, dirPath);
         if (!fs.existsSync(dirPath)) {
@@ -47,8 +51,25 @@ const nodeWalker = (type: string, dirPath: string): Observable<string> =>
 
         const walker = walk.walk(dirPath, options);
 
-        walker.on(type, function(root: string, fileStats: any, next: Function) {
-            observer.next(`${root}/${fileStats.name}`);
+        walker.on("directory", function(
+            root: string,
+            fileStats: any,
+            next: Function
+        ) {
+            if (type === "directory" || type === "all") {
+                observer.next(`${root}/${fileStats.name}`);
+            }
+            next();
+        });
+
+        walker.on("file", function(
+            root: string,
+            fileStats: any,
+            next: Function
+        ) {
+            if (type === "file" || type === "all") {
+                observer.next(`${root}/${fileStats.name}`);
+            }
             next();
         });
 
@@ -89,7 +110,20 @@ export const fileWalker = (dirName: string): Observable<string> =>
         )
     );
 
+export const contentWalker = (dirName: string): Observable<string> => {
+    return nodeWalker("all", dirName).pipe(
+        filter((filePath: string) =>
+            ignoreFiles({
+                filePath,
+                filesToIgnore,
+                extensionsToIgnore
+            })
+        )
+    );
+};
+
 module.exports = {
     directoryWalker,
-    fileWalker
+    fileWalker,
+    contentWalker
 };
