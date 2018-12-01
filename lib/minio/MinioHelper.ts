@@ -403,7 +403,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
                 logger.error(
-                    `${this._className}.removeBucket: ${errorResponse.name}`
+                    `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
             }
@@ -629,7 +629,7 @@ export type BucketNameParams = { bucketName: string };
 export type PutObjectParams = {
     bucketName: string;
     filePath: string;
-    dirName?: string | "./";
+    dirName?: string;
 };
 
 /**
