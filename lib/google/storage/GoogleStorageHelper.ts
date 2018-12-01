@@ -332,8 +332,14 @@ export class GoogleStorageHelper {
                 return reject(errorResponse);
             }
 
+            // dirName should end with /
             if (!dirName.endsWith("/")) {
                 dirName = `${dirName}/`;
+            }
+
+            // if no dirname then put object in root directory.
+            if (dirName === "./") {
+                dirName = "";
             }
 
             const options = {
