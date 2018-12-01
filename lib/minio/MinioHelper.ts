@@ -395,6 +395,7 @@ export class MinioHelper {
     public putObject(params: PutObjectParams): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
             const { bucketName, filePath } = params;
+            let { dirName = "./" } = params;
 
             if (!isValidString(bucketName) || !isValidString(filePath)) {
                 const errorResponse = ServiceResponse.createErrorResponse(
@@ -420,6 +421,10 @@ export class MinioHelper {
                 return reject(errorResponse);
             }
 
+            if (!dirName.endsWith("/")) {
+                dirName = `${dirName}/`;
+            }
+
             const fileStream = fs.createReadStream(filePath);
             const fileName = path.basename(filePath);
 
@@ -439,7 +444,7 @@ export class MinioHelper {
 
                 this._minioClient.putObject(
                     bucketName,
-                    fileName,
+                    `${dirName}${fileName}`,
                     fileStream,
                     stats.size,
                     (err, etag) => {
@@ -621,7 +626,11 @@ export type BucketNameParams = { bucketName: string };
  * @property {string} bucketName - Indicates bucket name
  * @property {string} filePath - Indicates file path
  */
-export type PutObjectParams = { bucketName: string; filePath: string };
+export type PutObjectParams = {
+    bucketName: string;
+    filePath: string;
+    dirName?: string | "./";
+};
 
 /**
  * @typedef {Object} PutObjectParams

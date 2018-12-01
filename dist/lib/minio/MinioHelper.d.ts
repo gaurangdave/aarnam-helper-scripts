@@ -21,6 +21,7 @@ export declare type BucketNameParams = {
 export declare type PutObjectParams = {
     bucketName: string;
     filePath: string;
+    dirName?: string | "./";
 };
 export declare type FileNameParams = {
     bucketName: string;
