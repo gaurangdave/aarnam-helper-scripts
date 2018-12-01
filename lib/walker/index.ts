@@ -2,9 +2,10 @@ const path = require("path");
 const fs = require("fs");
 const walk = require("walk");
 
-import { Observable } from "rxjs";
+import { Observable, Observer } from "rxjs";
 import { filter } from "rxjs/operators";
 import { ignoreFiles } from "./filters";
+import { dirname } from "path";
 
 // hard coded array of directories to ignore
 const directoriesToIgnore = ["node_modules", ".git", ".eslintignore", ".idea"];
@@ -32,8 +33,11 @@ const extensionsToIgnore = [".ts", ".map"];
  * @param {*} dirPath
  * @return Observable
  */
-const nodeWalker = (type: string, dirPath: string): Observable<string> =>
-    Observable.create((observer: any) => {
+const nodeWalker = (
+    type: string = "all",
+    dirPath: string
+): Observable<WalkerFsObject> =>
+    Observable.create((observer: Observer<WalkerFsObject>) => {
         // const directoryToParse = path.resolve(ROOT_DIR, dirPath);
         if (!fs.existsSync(dirPath)) {
             observer.error(`${dirPath} does not exist!`);
@@ -47,8 +51,31 @@ const nodeWalker = (type: string, dirPath: string): Observable<string> =>
 
         const walker = walk.walk(dirPath, options);
 
-        walker.on(type, function(root: string, fileStats: any, next: Function) {
-            observer.next(`${root}/${fileStats.name}`);
+        walker.on("directory", function(
+            root: string,
+            dirStats: any,
+            next: Function
+        ) {
+            if (type === "directory" || type === "all") {
+                observer.next({
+                    filePath: `${root}/${dirStats.name}`,
+                    stats: dirStats
+                });
+            }
+            next();
+        });
+
+        walker.on("file", function(
+            root: string,
+            fileStats: any,
+            next: Function
+        ) {
+            if (type === "file" || type === "all") {
+                observer.next({
+                    filePath: `${root}/${fileStats.name}`,
+                    stats: fileStats
+                });
+            }
             next();
         });
 
@@ -71,25 +98,43 @@ const nodeWalker = (type: string, dirPath: string): Observable<string> =>
  * @param {*} dirName
  * @return {Observer<T>}
  */
-export const directoryWalker = (dirName: string): Observable<string> =>
+export const directoryWalker = (dirName: string): Observable<WalkerFsObject> =>
     nodeWalker("directory", dirName);
 
 /**
  * Function to create stream of files from given source.
  * @param {*} dirName
  */
-export const fileWalker = (dirName: string): Observable<string> =>
+export const fileWalker = (dirName: string): Observable<WalkerFsObject> =>
     nodeWalker("file", dirName).pipe(
-        filter((filePath: string) =>
+        filter((contentObj: WalkerFsObject) =>
             ignoreFiles({
-                filePath,
+                filePath: contentObj.filePath,
                 filesToIgnore,
                 extensionsToIgnore
             })
         )
     );
 
+export const contentWalker = (dirName: string): Observable<WalkerFsObject> => {
+    return nodeWalker("all", dirName).pipe(
+        filter((contentObj: WalkerFsObject) =>
+            ignoreFiles({
+                filePath: contentObj.filePath,
+                filesToIgnore,
+                extensionsToIgnore
+            })
+        )
+    );
+};
+
 module.exports = {
     directoryWalker,
-    fileWalker
+    fileWalker,
+    contentWalker
+};
+
+export type WalkerFsObject = {
+    filePath: string;
+    stats: any;
 };

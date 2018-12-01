@@ -306,6 +306,7 @@ export class GoogleStorageHelper {
     public putObject(params: PutObjectParams): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
             const { bucketName, filePath, isPublic = false } = params;
+            let { dirName = "./" } = params;
 
             if (!isValidString(bucketName) || !isValidString(filePath)) {
                 const errorResponse = ServiceResponse.createErrorResponse(
@@ -331,6 +332,16 @@ export class GoogleStorageHelper {
                 return reject(errorResponse);
             }
 
+            // dirName should end with /
+            if (!dirName.endsWith("/")) {
+                dirName = `${dirName}/`;
+            }
+
+            // if no dirname then put object in root directory.
+            if (dirName === "./") {
+                dirName = "";
+            }
+
             const options = {
                 public: isPublic,
                 gzip: "auto",
@@ -339,7 +350,7 @@ export class GoogleStorageHelper {
 
             const fileName = path.basename(filePath);
             const bucket = this._storage.bucket(bucketName);
-            const file = bucket.file(fileName);
+            const file = bucket.file(`${dirName}${fileName}`);
             fs.createReadStream(filePath)
                 .pipe(file.createWriteStream(options))
                 .on("error", (error: Error) => {
@@ -400,6 +411,7 @@ export type PutObjectParams = {
     bucketName: string;
     filePath: string;
     isPublic: boolean;
+    dirName?: string;
 };
 
 export type FileNameParams = {
