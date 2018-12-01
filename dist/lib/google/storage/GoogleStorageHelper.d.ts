@@ -25,6 +25,7 @@ export declare type PutObjectParams = {
     bucketName: string;
     filePath: string;
     isPublic: boolean;
+    dirName?: string;
 };
 export declare type FileNameParams = {
     bucketName: string;
