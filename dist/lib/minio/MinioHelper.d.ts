@@ -11,6 +11,7 @@ export declare class MinioHelper {
     emptyBucket(params: BucketNameParams): Promise<ServiceResponse>;
     listObjects(params: BucketNameParams): Promise<ServiceResponse>;
     putObject(params: PutObjectParams): Promise<ServiceResponse>;
+    putStringObject(params: PutStringParams): Promise<ServiceResponse>;
     getObject(params: FileNameParams): Promise<ServiceResponse>;
     removeObject(params: FileNameParams): Promise<ServiceResponse>;
     bucketExists(params: BucketNameParams): Promise<ServiceResponse>;
@@ -22,6 +23,12 @@ export declare type PutObjectParams = {
     bucketName: string;
     filePath: string;
     dirName?: string;
+};
+export declare type PutStringParams = {
+    bucketName: string;
+    fileName: string;
+    dirName?: string;
+    data: string;
 };
 export declare type FileNameParams = {
     bucketName: string;

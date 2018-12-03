@@ -78,9 +78,15 @@ describe("test exported members", () => {
     test("should export getBucketList method", () => {
         expect(mh.getBucketList).toBeDefined();
     });
+
     test("should export putObject method", () => {
         expect(mh.putObject).toBeDefined();
     });
+
+    test("should export putStringObject method", () => {
+        expect(mh.putStringObject).toBeDefined();
+    });
+
     test("should export createBucket method", () => {
         expect(mh.createBucket).toBeDefined();
     });
@@ -339,6 +345,80 @@ describe("test putObject()", () => {
 
     test("putObject() response name should match", () => {
         expect(putObjectResponse._name === "FILE_UPLOAD_SUCCESSFULL").toBeTruthy();
+    });
+
+
+    afterAll(async (done) => {
+        try {
+            await helper.deleteTestData(bucketName);
+            await helper.deleteTestBucket(bucketName);
+            done();
+        } catch (error) {
+            console.error('Error deleting test data');
+            done();
+        }
+
+    }, 15000);
+});
+
+describe("test putStringObject()", () => {
+    /**
+     * Before all
+     * 1. Get bucket name with timestamp. const bucketToDelete
+     * 2. Using minio helper to create a new bucket. 
+     * 3. Use minio client to put test string object in new bucket.
+     *      3.1 validate response
+     * 4. Use minio helper to get object list
+     *      4.1 validate list
+     * 
+     * After All
+     * 1. Remove test bucket using minio client.
+     */
+    const bucketName = `testbucket-${Date.now()}`;
+    let putStringObjectResponse = null;
+    // const filePath = path.resolve(__dirname, '../data/test_file.json');
+    const testData = {
+        "message": "hello world"
+    };
+    const testFile = "test_file.json"
+    beforeAll(async (done) => {
+
+        mh = minioHelperFactory.initialize({
+            accessKey,
+            secretKey,
+            endPoint
+        });
+
+        try {
+            await helper.createTestBucket(bucketName);
+            putStringObjectResponse = await mh.putStringObject({
+                bucketName,
+                fileName: testFile,
+                data: JSON.stringify(testData)
+            });
+
+            done();
+        } catch (e) {
+            console.error('Error creating test bucket', e);
+            done();
+        }
+
+    }, 15000);
+
+    test("putStringObject() response should not be null", () => {
+        expect(putStringObjectResponse).toBeDefined();
+    })
+
+    test("putObject() response should be an object", () => {
+        expect(typeof (putStringObjectResponse) === "object").toBeTruthy();
+    });
+
+    test("putObject() response type should be success", () => {
+        expect(putStringObjectResponse._type === "SUCCESS").toBeTruthy();
+    });
+
+    test("putObject() response name should match", () => {
+        expect(putStringObjectResponse._name === "STRING_OBJECT_UPLOAD_SUCCESSFULL").toBeTruthy();
     });
 
 
