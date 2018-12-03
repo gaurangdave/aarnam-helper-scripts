@@ -11,6 +11,7 @@ const responseCodes = require("../constants/minio");
 const isValidString = require("../validators/string.validator").isValidString;
 const isValidNonEmptyArray = require("../validators/array.validator")
     .isValidNonEmptyArray;
+const Readable = require("stream").Readable;
 
 export class MinioHelper {
     private _isInitialized: boolean = false;
@@ -483,6 +484,77 @@ export class MinioHelper {
     }
 
     /**
+     * Function to save  string as an object on minio object server
+     * @param {PutStringParams} params
+     * @returns {Promise<ServiceResponse>}
+     * @memberof MinioHelper
+     */
+    public putStringObject(params: PutStringParams): Promise<ServiceResponse> {
+        return new Q.Promise((resolve: Function, reject: Function) => {
+            const { bucketName, fileName, data } = params;
+            let { dirName = "./" } = params;
+
+            if (
+                !isValidString(bucketName) ||
+                !isValidString(fileName) ||
+                !isValidString(data)
+            ) {
+                const errorResponse = ServiceResponse.createErrorResponse(
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
+                    responseCodes.ERRORS.REQUIRED_PARAM_MISSING
+                );
+                logger.error(
+                    `${this._className}.putStringObject: ${errorResponse.name}`
+                );
+                return reject(errorResponse);
+            }
+
+            if (!dirName.endsWith("/")) {
+                dirName = `${dirName}/`;
+            }
+
+            const dataStream = new Readable();
+            dataStream.push(data);
+            dataStream.push(null);
+            this._minioClient.putObject(
+                bucketName,
+                `${dirName}${fileName}`,
+                data,
+                (error, etag) => {
+                    if (error) {
+                        const errorResponse = ServiceResponse.createErrorResponse(
+                            responseCodes.ERRORS.ERROR_UPLOADING_STRING_OBJECT,
+                            responseCodes.ERRORS.ERROR_UPLOADING_STRING_OBJECT,
+                            error
+                        );
+
+                        logger.error(
+                            `${this._className}.putObject: ${
+                                errorResponse.name
+                            }`
+                        );
+                        return reject(errorResponse);
+                    }
+
+                    if (etag) {
+                        const successResponse = ServiceResponse.createSuccessResponse(
+                            responseCodes.INFO.STRING_OBJECT_UPLOAD_SUCCESSFULL,
+                            responseCodes.INFO.STRING_OBJECT_UPLOAD_SUCCESSFULL,
+                            etag
+                        );
+                        logger.success(
+                            `${this._className}.putObject: ${
+                                successResponse.name
+                            }`
+                        );
+                        return resolve(successResponse);
+                    }
+                }
+            );
+        });
+    }
+
+    /**
      *
      * @param {FileNameParams} params
      * @returns {Promise<ServiceResponse>}
@@ -625,11 +697,25 @@ export type BucketNameParams = { bucketName: string };
  * @typedef {Object} PutObjectParams
  * @property {string} bucketName - Indicates bucket name
  * @property {string} filePath - Indicates file path
+ * @property {string} dirName - Indicates directory name
  */
 export type PutObjectParams = {
     bucketName: string;
     filePath: string;
     dirName?: string;
+};
+
+/**
+ * @typedef {Object} PutStringParams
+ * @property {string} bucketName - Indicates bucket name
+ * @property {string} fileName - Indicates file path
+ * @property {string} dirName - Indicates directory name
+ */
+export type PutStringParams = {
+    bucketName: string;
+    fileName: string;
+    dirName?: string;
+    data: string;
 };
 
 /**
