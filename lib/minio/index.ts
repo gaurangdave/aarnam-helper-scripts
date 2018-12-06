@@ -1,5 +1,6 @@
 import { MinioHelper } from "./MinioHelper";
-const logger = require("../logger");
+import { Logger } from "../logger";
+
 const moduleName = "MinioHelper";
 
 /**
@@ -10,6 +11,8 @@ export const initialize = (
     params: InitializationParams
 ): MinioHelper | null => {
     const { accessKey, secretKey, endPoint } = params;
+    const logger = new Logger();
+
     if (!endPoint) {
         logger.error(
             `${moduleName}: Cannot Initialize : undefined or invalid endPoint.`

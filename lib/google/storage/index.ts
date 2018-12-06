@@ -1,7 +1,6 @@
 import { GoogleStorageHelper } from "./GoogleStorageHelper";
+import { Logger } from "../../logger";
 
-// Imports the Google Cloud client library.
-const logger = require("../../logger");
 const moduleName = "GoogleStorageHelper";
 
 /**
@@ -12,16 +11,17 @@ export const initialize = (
     params: InitializationParams
 ): GoogleStorageHelper | null => {
     const { keyFilePath, projectId } = params;
+    const lg = new Logger();
 
     if (!keyFilePath) {
-        logger.error(
+        lg.error(
             `${moduleName}: Cannot Initialize : undefined or invalid key file.`
         );
         return null;
     }
 
     if (!projectId) {
-        logger.error(
+        lg.error(
             `${moduleName}: Cannot Initialize : undefined or invalid projectId.`
         );
         return null;

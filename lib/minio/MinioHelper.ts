@@ -2,11 +2,12 @@ import { Client, BucketItemFromList, BucketItem, ResultCallback } from "minio";
 import { Stats } from "fs";
 import { Stream } from "stream";
 import { ServiceResponse } from "../serviceResponse/ServiceResponse";
+import { Logger } from "../logger";
+
 const Minio = require("minio");
 const Q = require("q");
 const fs = require("fs");
 const path = require("path");
-const logger = require("../logger");
 const responseCodes = require("../constants/minio");
 const isValidString = require("../validators/string.validator").isValidString;
 const isValidNonEmptyArray = require("../validators/array.validator")
@@ -17,7 +18,7 @@ export class MinioHelper {
     private _isInitialized: boolean = false;
     private _className = "MinioHelper";
     private _minioClient: Client;
-
+    private _logger: Logger;
     /**
      * Creates an instance of MinioHelper.
      * @param {string} accessKey
@@ -34,6 +35,7 @@ export class MinioHelper {
         });
 
         this._isInitialized = true;
+        this._logger = new Logger();
     }
 
     /**
@@ -60,7 +62,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.removeBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -76,7 +78,7 @@ export class MinioHelper {
                             responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
                             bucketExistsError
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.createBucket: ${
                                 errorResponse.name
                             }`
@@ -97,7 +99,7 @@ export class MinioHelper {
                                             .ERROR_CREATING_BUCKET,
                                         makeBucketError
                                     );
-                                    logger.error(
+                                    this._logger.error(
                                         `${this._className}.createBucket: ${
                                             errorResponse.name
                                         }`
@@ -110,7 +112,7 @@ export class MinioHelper {
                                         responseCodes.INFO
                                             .CREATE_BUCKET_SUCCESSFULL
                                     );
-                                    logger.success(
+                                    this._logger.success(
                                         `${this._className}.createBucket: ${
                                             successResponse.name
                                         }`
@@ -124,7 +126,7 @@ export class MinioHelper {
                             responseCodes.INFO.BUCKET_EXISTS,
                             responseCodes.INFO.BUCKET_EXISTS
                         );
-                        logger.success(
+                        this._logger.success(
                             `${this._className}.createBucket: ${
                                 successResponse.name
                             }`
@@ -148,7 +150,7 @@ export class MinioHelper {
                 const errorResponse = ServiceResponse.createErrorResponse(
                     responseCodes.ERRORS.MINIO_CLIENT_NOT_INITIALIZED
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.getBucketList: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -161,7 +163,7 @@ export class MinioHelper {
                         responseCodes.INFO.GET_BUCKET_LIST_SUCCESSFULL,
                         data
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.getBucketList: ${
                             successResponse.name
                         }`
@@ -174,7 +176,7 @@ export class MinioHelper {
                         responseCodes.ERRORS.ERROR_GETTING_BUCKET_LIST,
                         error
                     );
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.getBucketList: ${
                             errorResponse.name
                         }`,
@@ -201,7 +203,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.removeBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -222,7 +224,7 @@ export class MinioHelper {
                             responseCodes.ERRORS.ERROR_REMOVING_BUCKET,
                             bucketRemoveError
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.removeBucket: ${
                                 errorResponse.name
                             }`
@@ -234,7 +236,7 @@ export class MinioHelper {
                         responseCodes.INFO.REMOVE_BUCKET_SUCCESSFULL,
                         responseCodes.INFO.REMOVE_BUCKET_SUCCESSFULL
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.removeBucket: ${
                             successResponse.name
                         }`
@@ -260,7 +262,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.emptyBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -276,7 +278,7 @@ export class MinioHelper {
                             responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL
                         );
 
-                        logger.success(
+                        this._logger.success(
                             `${this._className}.emptyBucket: ${
                                 successResponse.name
                             }`
@@ -302,7 +304,7 @@ export class MinioHelper {
                                     removeObjectError
                                 );
 
-                                logger.error(
+                                this._logger.error(
                                     `${this._className}.emptyBucket:${
                                         errorResponse.name
                                     }`,
@@ -317,7 +319,7 @@ export class MinioHelper {
                                 responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL
                             );
 
-                            logger.success(
+                            this._logger.success(
                                 `${this._className}.emptyBucket: ${
                                     successResponse.name
                                 }`
@@ -349,7 +351,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.emptyBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -366,7 +368,7 @@ export class MinioHelper {
             });
 
             stream.on("error", (err: Error) => {
-                logger.error(
+                this._logger.error(
                     `${this._className}.listObjects: ${
                         responseCodes.ERRORS.ERROR_GETTING_OBJECT_LIST
                     }`
@@ -379,7 +381,7 @@ export class MinioHelper {
                     responseCodes.INFO.GET_OBJECT_LIST_SUCCESSFULL,
                     objectList
                 );
-                logger.success(
+                this._logger.success(
                     `${this._className}.listObjects: ${successResponse.name}`
                 );
                 return resolve(successResponse);
@@ -403,7 +405,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -416,7 +418,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.FILE_DOES_NOT_EXIST
                 );
 
-                logger.error(
+                this._logger.error(
                     `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -437,7 +439,7 @@ export class MinioHelper {
                         err
                     );
 
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.putObject: ${errorResponse.name}`
                     );
                     return reject(errorResponse);
@@ -456,7 +458,7 @@ export class MinioHelper {
                                 err
                             );
 
-                            logger.error(
+                            this._logger.error(
                                 `${this._className}.putObject: ${
                                     errorResponse.name
                                 }`
@@ -470,7 +472,7 @@ export class MinioHelper {
                                 responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
                                 etag
                             );
-                            logger.success(
+                            this._logger.success(
                                 `${this._className}.putObject: ${
                                     successResponse.name
                                 }`
@@ -503,7 +505,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.putStringObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -528,7 +530,7 @@ export class MinioHelper {
                             error
                         );
 
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.putObject: ${
                                 errorResponse.name
                             }`
@@ -542,7 +544,7 @@ export class MinioHelper {
                             responseCodes.INFO.STRING_OBJECT_UPLOAD_SUCCESSFULL,
                             etag
                         );
-                        logger.success(
+                        this._logger.success(
                             `${this._className}.putObject: ${
                                 successResponse.name
                             }`
@@ -569,7 +571,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.getObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -585,7 +587,7 @@ export class MinioHelper {
                             responseCodes.ERRORS.ERROR_GETTING_OBJECT,
                             error
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.getObject: ${
                                 errorResponse.name
                             }`
@@ -606,7 +608,7 @@ export class MinioHelper {
                             fileData
                         );
 
-                        logger.success(
+                        this._logger.success(
                             `${this._className}.getObject: ${
                                 successResponse.name
                             }`
@@ -647,7 +649,7 @@ export class MinioHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.bucketExists: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -662,7 +664,7 @@ export class MinioHelper {
                             responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
                             error
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.bucketExists: ${
                                 errorResponse.name
                             }`
@@ -675,7 +677,7 @@ export class MinioHelper {
                         responseCodes.INFO.CHECKING_BUCKET_STATUS_SUCCESSFULL,
                         exists
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.bucketExists: ${
                             successResponse.name
                         }`
