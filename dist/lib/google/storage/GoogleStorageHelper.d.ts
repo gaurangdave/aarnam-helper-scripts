@@ -2,6 +2,7 @@ import { ServiceResponse } from "../../serviceResponse/ServiceResponse";
 export declare class GoogleStorageHelper {
     private _storage;
     private _className;
+    private _logger;
     constructor(keyFilename: string, projectId: string);
     createBucket(params: CreateBucketParams): Promise<ServiceResponse>;
     getBucketList(): Promise<ServiceResponse>;

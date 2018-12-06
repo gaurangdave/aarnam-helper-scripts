@@ -1,48 +1,59 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const colors = require("colors");
-exports.validateParams = (message, ...params) => {
-    if (typeof message === "string") {
-        return {
-            message,
-            params
-        };
+const ColorFormatter_1 = require("./ColorFormatter");
+const TextFormatter_1 = require("./TextFormatter");
+const ConsoleLogger_1 = require("./ConsoleLogger");
+class Logger {
+    constructor() {
+        this._colorFormatter = new ColorFormatter_1.ColorFormatter();
+        this._textFormatter = new TextFormatter_1.TextFormatter();
+        this._loggerObject = new ConsoleLogger_1.ConsoleLogger();
     }
-    if (message instanceof Array) {
+    info(...params) {
+        const { message, params: passThroughParams } = this._validateParams(...params);
+        const formattedMessage = this._colorFormatter.formatInfo(this._textFormatter.formatInfoText(message));
+        this._logIt(formattedMessage, passThroughParams);
+    }
+    warn(...params) {
+        const { message, params: passThroughParams } = this._validateParams(...params);
+        const formattedMessage = this._colorFormatter.formatWarning(this._textFormatter.formatWarningText(message));
+        this._logIt(formattedMessage, passThroughParams);
+    }
+    error(...params) {
+        const { message, params: passThroughParams } = this._validateParams(...params);
+        const formattedMessage = this._colorFormatter.formatError(this._textFormatter.formatErrorText(message));
+        this._logIt(formattedMessage, passThroughParams);
+    }
+    success(...params) {
+        const { message, params: passThroughParams } = this._validateParams(...params);
+        const formattedMessage = this._colorFormatter.formatSuccess(this._textFormatter.formatSuccessText(message));
+        this._logIt(formattedMessage, passThroughParams);
+    }
+    _validateParams(message, ...params) {
+        if (typeof message === "string") {
+            return {
+                message,
+                params
+            };
+        }
+        if (message instanceof Array) {
+            return {
+                message: "",
+                params: [...message, ...params]
+            };
+        }
         return {
             message: "",
-            params: [...message, ...params]
+            params: [...[message], ...params]
         };
     }
-    return {
-        message: "",
-        params: [...[message], ...params]
-    };
-};
-exports.info = (...params) => {
-    const { message, params: passThroughParams } = exports.validateParams(...params);
-    const msgString = colors.cyan(`INFO: ${message}`);
-    console.info(msgString, ...passThroughParams);
-};
-exports.warn = (...params) => {
-    const { message, params: passThroughParams } = exports.validateParams(...params);
-    const msgString = colors.yellow(`WARNING: ${message}`);
-    console.info(msgString, ...passThroughParams);
-};
-exports.error = (...params) => {
-    const { message, params: passThroughParams } = exports.validateParams(...params);
-    const msgString = colors.red(`ERROR: ${message}`);
-    console.info(msgString, ...passThroughParams);
-};
-exports.success = (...params) => {
-    const { message, params: passThroughParams } = exports.validateParams(...params);
-    const msgString = colors.green(`SUCCESS: ${message}`);
-    console.info(msgString, ...passThroughParams);
-};
-module.exports = {
-    info: exports.info,
-    warn: exports.warn,
-    error: exports.error,
-    success: exports.success
-};
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9saWIvbG9nZ2VyL2luZGV4LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsTUFBTSxNQUFNLEdBQUcsT0FBTyxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBRXBCLFFBQUEsY0FBYyxHQUFHLENBQzFCLE9BQW1DLEVBQ25DLEdBQUcsTUFBVyxFQUNoQixFQUFFO0lBQ0EsSUFBSSxPQUFPLE9BQU8sS0FBSyxRQUFRLEVBQUU7UUFDN0IsT0FBTztZQUNILE9BQU87WUFDUCxNQUFNO1NBQ1QsQ0FBQztLQUNMO0lBRUQsSUFBSSxPQUFPLFlBQVksS0FBSyxFQUFFO1FBQzFCLE9BQU87WUFDSCxPQUFPLEVBQUUsRUFBRTtZQUNYLE1BQU0sRUFBRSxDQUFDLEdBQUcsT0FBTyxFQUFFLEdBQUcsTUFBTSxDQUFDO1NBQ2xDLENBQUM7S0FDTDtJQUVELE9BQU87UUFDSCxPQUFPLEVBQUUsRUFBRTtRQUNYLE1BQU0sRUFBRSxDQUFDLEdBQUcsQ0FBQyxPQUFPLENBQUMsRUFBRSxHQUFHLE1BQU0sQ0FBQztLQUNwQyxDQUFDO0FBQ04sQ0FBQyxDQUFDO0FBRVcsUUFBQSxJQUFJLEdBQUcsQ0FBQyxHQUFHLE1BQVcsRUFBRSxFQUFFO0lBQ25DLE1BQU0sRUFBRSxPQUFPLEVBQUUsTUFBTSxFQUFFLGlCQUFpQixFQUFFLEdBQUcsc0JBQWMsQ0FBQyxHQUFHLE1BQU0sQ0FBQyxDQUFDO0lBQ3pFLE1BQU0sU0FBUyxHQUFHLE1BQU0sQ0FBQyxJQUFJLENBQUMsU0FBUyxPQUFPLEVBQUUsQ0FBQyxDQUFDO0lBQ2xELE9BQU8sQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLEdBQUcsaUJBQWlCLENBQUMsQ0FBQztBQUNsRCxDQUFDLENBQUM7QUFFVyxRQUFBLElBQUksR0FBRyxDQUFDLEdBQUcsTUFBVyxFQUFFLEVBQUU7SUFDbkMsTUFBTSxFQUFFLE9BQU8sRUFBRSxNQUFNLEVBQUUsaUJBQWlCLEVBQUUsR0FBRyxzQkFBYyxDQUFDLEdBQUcsTUFBTSxDQUFDLENBQUM7SUFDekUsTUFBTSxTQUFTLEdBQUcsTUFBTSxDQUFDLE1BQU0sQ0FBQyxZQUFZLE9BQU8sRUFBRSxDQUFDLENBQUM7SUFDdkQsT0FBTyxDQUFDLElBQUksQ0FBQyxTQUFTLEVBQUUsR0FBRyxpQkFBaUIsQ0FBQyxDQUFDO0FBQ2xELENBQUMsQ0FBQztBQUVXLFFBQUEsS0FBSyxHQUFHLENBQUMsR0FBRyxNQUFXLEVBQUUsRUFBRTtJQUNwQyxNQUFNLEVBQUUsT0FBTyxFQUFFLE1BQU0sRUFBRSxpQkFBaUIsRUFBRSxHQUFHLHNCQUFjLENBQUMsR0FBRyxNQUFNLENBQUMsQ0FBQztJQUN6RSxNQUFNLFNBQVMsR0FBRyxNQUFNLENBQUMsR0FBRyxDQUFDLFVBQVUsT0FBTyxFQUFFLENBQUMsQ0FBQztJQUNsRCxPQUFPLENBQUMsSUFBSSxDQUFDLFNBQVMsRUFBRSxHQUFHLGlCQUFpQixDQUFDLENBQUM7QUFDbEQsQ0FBQyxDQUFDO0FBRVcsUUFBQSxPQUFPLEdBQUcsQ0FBQyxHQUFHLE1BQVcsRUFBRSxFQUFFO0lBQ3RDLE1BQU0sRUFBRSxPQUFPLEVBQUUsTUFBTSxFQUFFLGlCQUFpQixFQUFFLEdBQUcsc0JBQWMsQ0FBQyxHQUFHLE1BQU0sQ0FBQyxDQUFDO0lBQ3pFLE1BQU0sU0FBUyxHQUFHLE1BQU0sQ0FBQyxLQUFLLENBQUMsWUFBWSxPQUFPLEVBQUUsQ0FBQyxDQUFDO0lBQ3RELE9BQU8sQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLEdBQUcsaUJBQWlCLENBQUMsQ0FBQztBQUNsRCxDQUFDLENBQUM7QUFFRixNQUFNLENBQUMsT0FBTyxHQUFHO0lBQ2IsSUFBSSxFQUFKLFlBQUk7SUFDSixJQUFJLEVBQUosWUFBSTtJQUNKLEtBQUssRUFBTCxhQUFLO0lBQ0wsT0FBTyxFQUFQLGVBQU87Q0FDVixDQUFDIn0=
+    _logIt(message, params) {
+        if (!Logger.LoggingDisabled) {
+            this._loggerObject.logIt(message, params);
+        }
+    }
+}
+Logger.LoggingDisabled = false;
+exports.Logger = Logger;
+module.exports = { Logger };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9saWIvbG9nZ2VyL2luZGV4LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQ0EscURBQWtEO0FBQ2xELG1EQUFnRDtBQUVoRCxtREFBZ0Q7QUFFaEQsTUFBYSxNQUFNO0lBTWY7UUFDSSxJQUFJLENBQUMsZUFBZSxHQUFHLElBQUksK0JBQWMsRUFBRSxDQUFDO1FBQzVDLElBQUksQ0FBQyxjQUFjLEdBQUcsSUFBSSw2QkFBYSxFQUFFLENBQUM7UUFJMUMsSUFBSSxDQUFDLGFBQWEsR0FBRyxJQUFJLDZCQUFhLEVBQUUsQ0FBQztJQUM3QyxDQUFDO0lBT00sSUFBSSxDQUFDLEdBQUcsTUFBVztRQUN0QixNQUFNLEVBQUUsT0FBTyxFQUFFLE1BQU0sRUFBRSxpQkFBaUIsRUFBRSxHQUFHLElBQUksQ0FBQyxlQUFlLENBQy9ELEdBQUcsTUFBTSxDQUNaLENBQUM7UUFDRixNQUFNLGdCQUFnQixHQUFHLElBQUksQ0FBQyxlQUFlLENBQUMsVUFBVSxDQUNwRCxJQUFJLENBQUMsY0FBYyxDQUFDLGNBQWMsQ0FBQyxPQUFPLENBQUMsQ0FDOUMsQ0FBQztRQUNGLElBQUksQ0FBQyxNQUFNLENBQUMsZ0JBQWdCLEVBQUUsaUJBQWlCLENBQUMsQ0FBQztJQUNyRCxDQUFDO0lBT00sSUFBSSxDQUFDLEdBQUcsTUFBVztRQUN0QixNQUFNLEVBQUUsT0FBTyxFQUFFLE1BQU0sRUFBRSxpQkFBaUIsRUFBRSxHQUFHLElBQUksQ0FBQyxlQUFlLENBQy9ELEdBQUcsTUFBTSxDQUNaLENBQUM7UUFDRixNQUFNLGdCQUFnQixHQUFHLElBQUksQ0FBQyxlQUFlLENBQUMsYUFBYSxDQUN2RCxJQUFJLENBQUMsY0FBYyxDQUFDLGlCQUFpQixDQUFDLE9BQU8sQ0FBQyxDQUNqRCxDQUFDO1FBQ0YsSUFBSSxDQUFDLE1BQU0sQ0FBQyxnQkFBZ0IsRUFBRSxpQkFBaUIsQ0FBQyxDQUFDO0lBQ3JELENBQUM7SUFPTSxLQUFLLENBQUMsR0FBRyxNQUFXO1FBQ3ZCLE1BQU0sRUFBRSxPQUFPLEVBQUUsTUFBTSxFQUFFLGlCQUFpQixFQUFFLEdBQUcsSUFBSSxDQUFDLGVBQWUsQ0FDL0QsR0FBRyxNQUFNLENBQ1osQ0FBQztRQUNGLE1BQU0sZ0JBQWdCLEdBQUcsSUFBSSxDQUFDLGVBQWUsQ0FBQyxXQUFXLENBQ3JELElBQUksQ0FBQyxjQUFjLENBQUMsZUFBZSxDQUFDLE9BQU8sQ0FBQyxDQUMvQyxDQUFDO1FBQ0YsSUFBSSxDQUFDLE1BQU0sQ0FBQyxnQkFBZ0IsRUFBRSxpQkFBaUIsQ0FBQyxDQUFDO0lBQ3JELENBQUM7SUFPTSxPQUFPLENBQUMsR0FBRyxNQUFXO1FBQ3pCLE1BQU0sRUFBRSxPQUFPLEVBQUUsTUFBTSxFQUFFLGlCQUFpQixFQUFFLEdBQUcsSUFBSSxDQUFDLGVBQWUsQ0FDL0QsR0FBRyxNQUFNLENBQ1osQ0FBQztRQUNGLE1BQU0sZ0JBQWdCLEdBQUcsSUFBSSxDQUFDLGVBQWUsQ0FBQyxhQUFhLENBQ3ZELElBQUksQ0FBQyxjQUFjLENBQUMsaUJBQWlCLENBQUMsT0FBTyxDQUFDLENBQ2pELENBQUM7UUFDRixJQUFJLENBQUMsTUFBTSxDQUFDLGdCQUFnQixFQUFFLGlCQUFpQixDQUFDLENBQUM7SUFDckQsQ0FBQztJQU9PLGVBQWUsQ0FDbkIsT0FBbUMsRUFDbkMsR0FBRyxNQUFXO1FBRWQsSUFBSSxPQUFPLE9BQU8sS0FBSyxRQUFRLEVBQUU7WUFDN0IsT0FBTztnQkFDSCxPQUFPO2dCQUNQLE1BQU07YUFDVCxDQUFDO1NBQ0w7UUFFRCxJQUFJLE9BQU8sWUFBWSxLQUFLLEVBQUU7WUFDMUIsT0FBTztnQkFDSCxPQUFPLEVBQUUsRUFBRTtnQkFDWCxNQUFNLEVBQUUsQ0FBQyxHQUFHLE9BQU8sRUFBRSxHQUFHLE1BQU0sQ0FBQzthQUNsQyxDQUFDO1NBQ0w7UUFFRCxPQUFPO1lBQ0gsT0FBTyxFQUFFLEVBQUU7WUFDWCxNQUFNLEVBQUUsQ0FBQyxHQUFHLENBQUMsT0FBTyxDQUFDLEVBQUUsR0FBRyxNQUFNLENBQUM7U0FDcEMsQ0FBQztJQUNOLENBQUM7SUFFTyxNQUFNLENBQUMsT0FBZSxFQUFFLE1BQVc7UUFDdkMsSUFBSSxDQUFDLE1BQU0sQ0FBQyxlQUFlLEVBQUU7WUFDekIsSUFBSSxDQUFDLGFBQWEsQ0FBQyxLQUFLLENBQUMsT0FBTyxFQUFFLE1BQU0sQ0FBQyxDQUFDO1NBQzdDO0lBQ0wsQ0FBQzs7QUF4R2Esc0JBQWUsR0FBWSxLQUFLLENBQUM7QUFKbkQsd0JBNkdDO0FBR0QsTUFBTSxDQUFDLE9BQU8sR0FBRyxFQUFFLE1BQU0sRUFBRSxDQUFDIn0=
