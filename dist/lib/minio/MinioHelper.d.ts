@@ -3,6 +3,7 @@ export declare class MinioHelper {
     private _isInitialized;
     private _className;
     private _minioClient;
+    private _logger;
     constructor(accessKey: string, secretKey: string, endPoint: string);
     isInitialized(): Boolean;
     createBucket(params: BucketNameParams): Promise<ServiceResponse>;

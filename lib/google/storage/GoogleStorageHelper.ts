@@ -1,9 +1,10 @@
 // Imports the Google Cloud client library.
 import { Bucket, Storage } from "@google-cloud/storage";
 import { ServiceResponse } from "../../serviceResponse/ServiceResponse";
+import {Logger} from '../../logger';
 
 const path = require("path");
-const logger = require("../../logger");
+// const logger = require("../../logger");
 const fs = require("fs");
 const Q = require("q");
 
@@ -14,12 +15,14 @@ const isValidString = require("../../validators/string.validator")
 export class GoogleStorageHelper {
     private _storage: Storage;
     private _className = "GoogleStorageHelper";
-
+    private _logger: Logger;
     constructor(keyFilename: string, projectId: string) {
         this._storage = new Storage({
             keyFilename,
             projectId
         });
+
+        this._logger = new Logger();
     }
 
     /**
@@ -42,7 +45,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.createBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -61,7 +64,7 @@ export class GoogleStorageHelper {
                     responseCodes.INFO.BUCKET_EXISTS,
                     existingBucket
                 );
-                logger.success(
+                this._logger.success(
                     `${this._className}.createBucket: ${successResponse.name}`
                 );
                 return resolve(successResponse);
@@ -75,7 +78,7 @@ export class GoogleStorageHelper {
                         responseCodes.ERRORS.ERROR_CREATING_BUCKET,
                         makeBucketError
                     );
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.createBucket: ${errorResponse.name}`
                     );
                     return reject(errorResponse);
@@ -92,7 +95,7 @@ export class GoogleStorageHelper {
                     responseCodes.INFO.CREATE_BUCKET_SUCCESSFULL,
                     responseCodes.INFO.CREATE_BUCKET_SUCCESSFULL
                 );
-                logger.success(
+                this._logger.success(
                     `${this._className}.createBucket: ${successResponse.name}`
                 );
                 return resolve(successResponse);
@@ -115,7 +118,7 @@ export class GoogleStorageHelper {
                             responseCodes.ERRORS.ERROR_GETTING_BUCKET_LIST,
                             getBucketsError
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.getBucketList: ${
                                 errorResponse.name
                             }`,
@@ -129,7 +132,7 @@ export class GoogleStorageHelper {
                         responseCodes.INFO.GET_BUCKET_LIST_SUCCESSFULL,
                         data
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.getBucketList: ${
                             successResponse.name
                         }`
@@ -155,7 +158,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.removeBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -169,7 +172,7 @@ export class GoogleStorageHelper {
                         responseCodes.INFO.REMOVE_BUCKET_SUCCESSFULL,
                         response
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.removeBucket: ${
                             successResponse.name
                         }`
@@ -182,7 +185,7 @@ export class GoogleStorageHelper {
                         responseCodes.ERRORS.ERROR_REMOVING_BUCKET,
                         deleteError
                     );
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.removeBucket: ${errorResponse.name}`
                     );
                     return reject(errorResponse);
@@ -199,7 +202,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.emptyBucket: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -214,7 +217,7 @@ export class GoogleStorageHelper {
                         responseCodes.INFO.EMPTY_BUCKET_SUCCESSFULL
                     );
 
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.emptyBucket: ${
                             successResponse.name
                         }`
@@ -229,7 +232,7 @@ export class GoogleStorageHelper {
                         deleteFilesError
                     );
 
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.emptyBucket:${errorResponse.name}`,
                         deleteFilesError
                     );
@@ -255,7 +258,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.bucketExists: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -271,7 +274,7 @@ export class GoogleStorageHelper {
                             responseCodes.ERRORS.ERROR_CHECKING_BUCKET_STATUS,
                             error
                         );
-                        logger.error(
+                        this._logger.error(
                             `${this._className}.bucketExists: ${
                                 errorResponse.name
                             }`
@@ -285,7 +288,7 @@ export class GoogleStorageHelper {
                         exists
                     );
 
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.bucketExists: ${
                             successResponse.name
                         }`
@@ -313,7 +316,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING,
                     responseCodes.ERRORS.REQUIRED_PARAM_MISSING
                 );
-                logger.error(
+                this._logger.error(
                     `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -326,7 +329,7 @@ export class GoogleStorageHelper {
                     responseCodes.ERRORS.FILE_DOES_NOT_EXIST
                 );
 
-                logger.error(
+                this._logger.error(
                     `${this._className}.putObject: ${errorResponse.name}`
                 );
                 return reject(errorResponse);
@@ -360,7 +363,7 @@ export class GoogleStorageHelper {
                         error
                     );
 
-                    logger.error(
+                    this._logger.error(
                         `${this._className}.putObject: ${errorResponse.name}`
                     );
                     return reject(errorResponse);
@@ -370,7 +373,7 @@ export class GoogleStorageHelper {
                         responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL,
                         responseCodes.INFO.FILE_UPLOAD_SUCCESSFULL
                     );
-                    logger.success(
+                    this._logger.success(
                         `${this._className}.putObject: ${successResponse.name}`
                     );
                     return resolve(successResponse);
