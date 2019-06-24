@@ -1,19 +1,20 @@
+import Icons from "../constants/unicodes";
 export class TextFormatter {
     constructor() {}
 
     public formatInfoText(message: string = ""): string {
-        return `INFO: ${message}`;
+        return `${Icons.NOTIFICATIONS.INFO} INFO: ${message}`;
     }
 
     public formatWarningText(message: string): string {
-        return `WARNING: ${message}`;
+        return `${Icons.NOTIFICATIONS.WARNING} WARNING: ${message}`;
     }
 
     public formatErrorText(message: string): string {
-        return `ERROR: ${message}`;
+        return `${Icons.NOTIFICATIONS.ERROR} ERROR: ${message}`;
     }
 
     public formatSuccessText(message: string): string {
-        return `SUCCESS: ${message}`;
+        return `${Icons.NOTIFICATIONS.SUCCESS} SUCCESS: ${message}`;
     }
 }

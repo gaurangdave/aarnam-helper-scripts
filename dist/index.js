@@ -6,19 +6,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const google_storage = __importStar(require("./lib/google/storage"));
 exports.google_storage = google_storage;
 const minio = __importStar(require("./lib/minio"));
 exports.minio = minio;
-const logger = __importStar(require("./lib/logger"));
-exports.logger = logger;
+const logger_1 = __importDefault(require("./lib/logger"));
+exports.Logger = logger_1.default;
 const walker = __importStar(require("./lib/walker"));
 exports.walker = walker;
+const slackHelper = __importStar(require("./lib/slack"));
+exports.slackHelper = slackHelper;
 module.exports = {
     google_storage,
     minio,
-    logger,
-    walker
+    Logger: logger_1.default,
+    walker,
+    slackHelper
 };
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9pbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7QUFBQSxxRUFBdUQ7QUFJOUMsd0NBQWM7QUFIdkIsbURBQXFDO0FBR1osc0JBQUs7QUFGOUIscURBQXVDO0FBRVAsd0JBQU07QUFEdEMscURBQXVDO0FBQ0Msd0JBQU07QUFDOUMsTUFBTSxDQUFDLE9BQU8sR0FBRztJQUNiLGNBQWM7SUFDZCxLQUFLO0lBQ0wsTUFBTTtJQUNOLE1BQU07Q0FDVCxDQUFDIn0=
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9pbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7QUFBQSxxRUFBdUQ7QUFNOUMsd0NBQWM7QUFMdkIsbURBQXFDO0FBS1osc0JBQUs7QUFKOUIsMERBQWtDO0FBSUYsaUJBSnpCLGdCQUFNLENBSXlCO0FBSHRDLHFEQUF1QztBQUdDLHdCQUFNO0FBRjlDLHlEQUEyQztBQUVLLGtDQUFXO0FBRTNELE1BQU0sQ0FBQyxPQUFPLEdBQUc7SUFDYixjQUFjO0lBQ2QsS0FBSztJQUNMLE1BQU0sRUFBTixnQkFBTTtJQUNOLE1BQU07SUFDTixXQUFXO0NBQ2QsQ0FBQyJ9
