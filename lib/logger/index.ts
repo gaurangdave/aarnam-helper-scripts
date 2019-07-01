@@ -4,7 +4,7 @@ import { TextFormatter } from "./TextFormatter";
 import { LoggerInterface } from "./LoggerInterface";
 import { ConsoleLogger } from "./ConsoleLogger";
 
-export class Logger {
+export default class Logger {
     private _colorFormatter: ColorFormatter;
     private _textFormatter: TextFormatter;
     private _loggerObject: LoggerInterface;
@@ -113,7 +113,4 @@ export class Logger {
             this._loggerObject.logIt(message, params);
         }
     }
-}
-
-
-module.exports = { Logger };
+};

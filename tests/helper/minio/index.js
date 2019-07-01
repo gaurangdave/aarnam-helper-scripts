@@ -4,7 +4,9 @@ const fs = require("fs");
 const path = require("path");
 
 
-const secretData = fs.readFileSync(`${process.env.minioKeyFile}`);
+const keyfilePath = process.env.minioKeyFile;
+const secretData = (keyfilePath && fs.readFileSync(keyfilePath)) || "{}";
+
 
 const {
      accessKey,
@@ -12,14 +14,23 @@ const {
      endPoint
 } = JSON.parse(secretData);
 
-const minioClient = new Minio.Client({
-     endPoint,
-     useSSL: true,
-     accessKey,
-     secretKey
-});
+let minioClient = null;
+
+const initMinioClient = () => {
+     if(!minioClient) {
+          minioClient = new Minio.Client({
+               endPoint,
+               useSSL: true,
+               accessKey,
+               secretKey
+          });
+     }
+     return minioClient
+}
+
 
 const createTestBucket = async (bucketName) => {
+     initMinioClient();
      try {
           const makeBucketResponse = await minioClient.makeBucket(bucketName);
      } catch (e) {
@@ -28,6 +39,7 @@ const createTestBucket = async (bucketName) => {
 };
 
 const uploadTestData = (bucketName, filePath) => {
+     initMinioClient();
      return new Q.Promise((resolve, reject) => {
           var fileStream = fs.createReadStream(filePath)
           const fileName = path.basename(filePath);
@@ -48,6 +60,7 @@ const uploadTestData = (bucketName, filePath) => {
 };
 
 const deleteTestData = async (bucketName) => {
+     initMinioClient();
      try {
           const removeObjectResponse = await minioClient.removeObject(bucketName, 'test_file.json');
      } catch (e) {
@@ -56,6 +69,7 @@ const deleteTestData = async (bucketName) => {
 };
 
 const deleteTestBucket = async (bucketName) => {
+     initMinioClient();
      try {
           const deleteResponse = await minioClient.removeBucket(bucketName);
      } catch (e) {
@@ -67,6 +81,7 @@ const deleteTestBucket = async (bucketName) => {
 };
 
 const listBuckets = () => {
+     initMinioClient();
      return new Q.Promise((resolve, reject) => {
           minioClient.listBuckets((error, buckets) => {
                if (error) {

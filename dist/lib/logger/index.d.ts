@@ -1,4 +1,4 @@
-export declare class Logger {
+export default class Logger {
     private _colorFormatter;
     private _textFormatter;
     private _loggerObject;

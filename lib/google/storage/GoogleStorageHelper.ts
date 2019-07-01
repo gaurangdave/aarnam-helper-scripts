@@ -1,5 +1,5 @@
 // Imports the Google Cloud client library.
-import { Bucket, Storage } from "@google-cloud/storage";
+import { Bucket, Storage, GetBucketsRequest } from "@google-cloud/storage";
 import { ServiceResponse } from "../../serviceResponse/ServiceResponse";
 import {Logger} from '../../logger';
 
@@ -110,8 +110,8 @@ export class GoogleStorageHelper {
      */
     public getBucketList(): Promise<ServiceResponse> {
         return new Q.Promise((resolve: Function, reject: Function) => {
-            this._storage.getBuckets(
-                (getBucketsError: Error, data: Bucket[]) => {
+            const gbRequest:GetBucketsRequest = {};
+            this._storage.getBuckets(gbRequest, (getBucketsError: Error | null, data: Bucket[]) => {
                     if (getBucketsError) {
                         const errorResponse = ServiceResponse.createErrorResponse(
                             responseCodes.ERRORS.ERROR_GETTING_BUCKET_LIST,
